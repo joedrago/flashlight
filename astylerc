@@ -1,0 +1,12 @@
+mode=c
+style=allman
+indent=spaces=4
+pad-oper
+unpad-paren
+convert-tabs
+suffix=none
+min-conditional-indent=0
+max-instatement-indent=120
+indent-col1-comments
+align-pointer=name
+lineend=linux
