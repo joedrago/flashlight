@@ -19,6 +19,6 @@ else()
     endif()
 endif()
 
-#add_subdirectory(external)
+add_subdirectory(external)
 add_subdirectory(flashlight)
 
