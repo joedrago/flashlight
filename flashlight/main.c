@@ -1,53 +1,44 @@
-#include "flarray.h"
-#include "flstring.h"
+#include "flashlight.h"
 
-#include <stdlib.h>
 #include <stdio.h>
-#include "cjson.h"
+#include <termios.h>
+#include <unistd.h>
 
-cJSON *loadConfig(const char *filename)
+int getkey()
 {
-    cJSON *config = NULL;
-    FILE *f = fopen(filename, "rb");
-    if(f)
-    {
-        int size;
-        fseek(f, 0, SEEK_END);
-        size = ftell(f);
-        fseek(f, 0, SEEK_SET);
-        if(size > 0)
-        {
-            char *json = (char*)malloc(size+1);
-            fread(json, size, 1, f);
-            json[size] = 0;
-            config = cJSON_Parse(json);
-            if(!config)
-            {
-                cJSONErrorInfo *err = cJSON_GetError();
-                printf("ERROR: failed to parse json [%s:%d]: %s\n", filename, err->lineno, err->desc);
-            }
-            free(json);
-        }
-        else
-        {
-            printf("ERROR: config is zero bytes [%s]\n", filename);
-        }
-        fclose(f);
-    }
-    else
-    {
-        printf("ERROR: Can't read config [%s]\n", filename);
-    }
-    return config;
+    struct termios oldt,
+                   newt;
+    int            ch;
+    tcgetattr( STDIN_FILENO, &oldt );
+    newt = oldt;
+    newt.c_lflag &= ~( ICANON | ECHO );
+    tcsetattr( STDIN_FILENO, TCSANOW, &newt );
+    ch = getchar();
+    tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
+    return ch;
 }
 
 int main(int argc, char **argv)
 {
-    cJSON *config = loadConfig("config.json");
-    if(config)
+    Flashlight *fl = flCreate("config.json");
+    int i;
+    int key;
+    int show;
+    while(1)
     {
-        printf("got config\n");
+        show = fl->view.count;
+        if(show > 10)
+            show = 10;
+        system("clear");
+        printf("[%5d] Search: %s\n", fl->view.count, fl->search);
+        for(i=0; i<show; i++)
+        {
+            ListEntry *e = fl->view.data[i];
+            printf(" * %s\n", e->path);
+        }
+        flKey(fl, getkey());
     }
+    flDestroy(fl);
     return 0;
 }
 

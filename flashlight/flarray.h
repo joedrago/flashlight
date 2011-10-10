@@ -10,7 +10,6 @@ typedef struct flArray
     void **data;
 } flArray;
 
-void flArraySetToken(flArray *p);
 int flArrayPush(flArray *p, void *v);
 void *flArrayPop(flArray *p);
 void *flArrayTop(flArray *p);

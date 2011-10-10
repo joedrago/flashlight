@@ -1,4 +1,25 @@
 {
+    "lists" : [
+        {
+            "type" : "files",
+            "path" : "/Users/jdrago/work/yap",
+            "extensions" : "c"
+        },
+        {
+            "type" : "files",
+            "path" : "/Users/jdrago/work/moba",
+            "extensions" : "c"
+        },
+        {
+            "type" : "files",
+            "path" : "/usr/include",
+            "extensions" : "h"
+        }
+    ],
+    "actions" : [
+    ],
+    "rules" : [
+    ],
     "keybinds" : [
     ]
 }
