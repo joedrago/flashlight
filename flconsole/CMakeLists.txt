@@ -12,4 +12,7 @@ include_directories(
 )
 add_executable(flconsole ${flconsole_srcs})
 target_link_libraries(flconsole flashlight cjson)
+if(UNIX)
+    target_link_libraries(flconsole m)
+endif()
 
