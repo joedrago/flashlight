@@ -8,9 +8,9 @@ typedef struct Walk
     const char *path;
     struct List *list;
 
-    char currentPath[WALK_MAXLEN+1];
-    char currentFilename[WALK_MAXLEN+1];
-    char currentExtension[WALK_MAXLEN+1];
+    char currentPath[WALK_MAXLEN + 1];
+    char currentFilename[WALK_MAXLEN + 1];
+    char currentExtension[WALK_MAXLEN + 1];
 
     void *platformData;
 } Walk;

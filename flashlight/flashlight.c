@@ -16,32 +16,32 @@
 
 static const char *flstristr(const char *haystack, const char *needle)
 {
-   if ( !*needle )
-   {
-      return haystack;
-   }
-   for ( ; *haystack; ++haystack )
-   {
-      if ( toupper(*haystack) == toupper(*needle) )
-      {
-         /*
-          * Matched starting char -- loop through remaining chars.
-          */
-         const char *h, *n;
-         for ( h = haystack, n = needle; *h && *n; ++h, ++n )
-         {
-            if ( toupper(*h) != toupper(*n) )
+    if(!*needle)
+    {
+        return haystack;
+    }
+    for(; *haystack; ++haystack)
+    {
+        if(toupper(*haystack) == toupper(*needle))
+        {
+            /*
+             * Matched starting char -- loop through remaining chars.
+             */
+            const char *h, *n;
+            for(h = haystack, n = needle; *h && *n; ++h, ++n)
             {
-               break;
+                if(toupper(*h) != toupper(*n))
+                {
+                    break;
+                }
             }
-         }
-         if ( !*n ) /* matched all of 'needle' to null termination */
-         {
-            return haystack; /* return the start of the match */
-         }
-      }
-   }
-   return 0;
+            if(!*n)    /* matched all of 'needle' to null termination */
+            {
+                return haystack; /* return the start of the match */
+            }
+        }
+    }
+    return 0;
 }
 
 static cJSON *loadConfig(const char *filename)
@@ -56,7 +56,7 @@ static cJSON *loadConfig(const char *filename)
         fseek(f, 0, SEEK_SET);
         if(size > 0)
         {
-            char *json = (char*)malloc(size+1);
+            char *json = (char *)malloc(size + 1);
             fread(json, size, 1, f);
             json[size] = 0;
             config = cJSON_Parse(json);
@@ -116,7 +116,7 @@ void flClear(Flashlight *fl)
     flArrayClear(&fl->lists, (flDestroyCB)listDestroy);
     if(fl->jsonData)
     {
-        cJSON_Delete((cJSON*)fl->jsonData);
+        cJSON_Delete((cJSON *)fl->jsonData);
         fl->jsonData = NULL;
     }
 }
@@ -153,10 +153,10 @@ static void flParseExtensions(List *list, const char *extensions)
             int len = (int)(p - front);
             if(len > 0)
             {
-                char *text = calloc(len+1, 1);
+                char *text = calloc(len + 1, 1);
                 memcpy(text, front, len);
                 flArrayPush(&list->extensions, text);
-                front = p+1;
+                front = p + 1;
             }
         }
         if(!*p)
@@ -167,13 +167,13 @@ static void flParseExtensions(List *list, const char *extensions)
 
 static void flBuild(Flashlight *fl)
 {
-    cJSON *json = (cJSON*)fl->jsonData;
+    cJSON *json = (cJSON *)fl->jsonData;
     cJSON *lists = cJSON_GetObjectItem(json, "lists");
     if(lists && (lists->type == cJSON_Array))
     {
         int count = cJSON_GetArraySize(lists);
         int i;
-        for(i=0; i<count; i++)
+        for(i = 0; i < count; i++)
         {
             cJSON *listData = cJSON_GetArrayItem(lists, i);
             List *list = calloc(sizeof(*list), 1);
@@ -200,7 +200,7 @@ void flReload(Flashlight *fl)
 static int isValidExtension(List *list, const char *ext)
 {
     int i;
-    for(i=0; i<list->extensions.count; i++)
+    for(i = 0; i < list->extensions.count; i++)
     {
         if(!strcmp(list->extensions.data[i], ext))
             return 1;
@@ -240,16 +240,23 @@ static void flViewReset(Flashlight *fl)
 static void flThink(Flashlight *fl)
 {
     int i;
+    int totalEntries = 0;
     flViewReset(fl);
-    for(i=0; i<fl->lists.count; i++)
+    for(i = 0; i < fl->lists.count; i++)
+    {
+        List *l = fl->lists.data[i];
+        totalEntries += l->entries.count;
+    }
+    flArrayReserve(&fl->view, totalEntries);
+    for(i = 0; i < fl->lists.count; i++)
     {
         int j;
         List *l = fl->lists.data[i];
-        for(j=0; j<l->entries.count; j++)
+        for(j = 0; j < l->entries.count; j++)
         {
             ListEntry *e = l->entries.data[j];
             if((fl->searchLen == 0)
-            || (flstristr(e->path, fl->search)))
+               || (flstristr(e->path, fl->search)))
             {
                 flArrayPush(&fl->view, e);
             }
@@ -260,7 +267,7 @@ static void flThink(Flashlight *fl)
 void flRefresh(Flashlight *fl)
 {
     int i;
-    for(i=0; i<fl->lists.count; i++)
+    for(i = 0; i < fl->lists.count; i++)
     {
         List *l = fl->lists.data[i];
         flRefreshFiles(l);
@@ -280,7 +287,7 @@ void flKey(Flashlight *fl, KeyType type, int key)
             flThink(fl);
         }
     }
-    else if(key == 10)
+    else if((key == 10) || (key == 13))
     {
         fl->searchLen = 0;
         fl->search[fl->searchLen] = 0;
@@ -298,23 +305,69 @@ void flKey(Flashlight *fl, KeyType type, int key)
         if(fl->searchLen < SEARCH_MAXLEN)
         {
             fl->searchLen++;
-            fl->search[fl->searchLen-1] = key;
+            fl->search[fl->searchLen - 1] = key;
             fl->search[fl->searchLen] = 0;
             flThink(fl);
         }
     }
-    else if((key == 11)
-         || (key == 12))
+    else if(key == 11)
     {
-        if(fl->view.count)
-        {
-            fl->viewIndex += (key == 11) ? 1 : -1;
-            if(fl->viewIndex < 0)
-                fl->viewIndex = 0;
-            if(fl->viewIndex >= fl->view.count)
-                fl->viewIndex = fl->view.count - 1;
-            // Adjust viewOffset based on viewIndex and viewHeight
-        }
+        flCommand(fl, COMMAND_VIEW_PREV);
+    }
+    else if(key == 12)
+    {
+        flCommand(fl, COMMAND_VIEW_NEXT);
     }
 }
 
+static void flSetViewIndex(Flashlight *fl, int newIndex)
+{
+    if(!fl->view.count)
+    {
+        fl->viewOffset = 0;
+        fl->viewIndex = 0;
+        return;
+    }
+    else
+    {
+        fl->viewIndex = newIndex;
+        if(fl->viewIndex < 0)
+            fl->viewIndex = 0;
+        if(fl->viewIndex >= fl->view.count)
+            fl->viewIndex = fl->view.count - 1;
+        if(fl->viewIndex < fl->viewOffset)
+            fl->viewOffset = fl->viewIndex;
+        else if(fl->viewIndex >= fl->viewOffset + fl->viewHeight)
+            fl->viewOffset = fl->viewIndex - fl->viewHeight + 1;
+    }
+}
+
+void flCommand(Flashlight *fl, Command command)
+{
+    switch(command)
+    {
+    case COMMAND_RELOAD:
+    {
+        flReload(fl);
+        break;
+    }
+    case COMMAND_VIEW_PREV:
+    {
+        flSetViewIndex(fl, fl->viewIndex - 1);
+        break;
+    }
+    case COMMAND_VIEW_NEXT:
+    {
+        flSetViewIndex(fl, fl->viewIndex + 1);
+        break;
+    }
+    case COMMAND_ACTION_PREV:
+    {
+        break;
+    }
+    case COMMAND_ACTION_NEXT:
+    {
+        break;
+    }
+    }
+}

@@ -82,13 +82,13 @@ int walkNext(Walk *walk)
             struct stat st;
             if(dent)
             {
-                char fullpath[WALK_MAXLEN+1];
+                char fullpath[WALK_MAXLEN + 1];
                 strcpy(fullpath, pwalkdir->path);
                 strcat(fullpath, "/");
                 strcat(fullpath, dent->d_name);
 
                 if((dent->d_name[0] != '.')
-                && (lstat(fullpath, &st) != -1))
+                   && (lstat(fullpath, &st) != -1))
                 {
                     if(S_ISDIR(st.st_mode))
                     {

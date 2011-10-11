@@ -8,7 +8,7 @@ void walkParsePath(Walk *walk)
     walk->currentExtension[0] = 0;
     if(ext)
     {
-        strcpy(walk->currentExtension, ext+1);
+        strcpy(walk->currentExtension, ext + 1);
     }
 }
 

@@ -40,7 +40,7 @@ typedef struct Flashlight
     int viewOffset;
     int viewIndex;
 
-    char search[SEARCH_MAXLEN+1];
+    char search[SEARCH_MAXLEN + 1];
     int searchLen;
 
     void *jsonData;
@@ -73,7 +73,6 @@ typedef enum Command
 
     COMMAND_COUNT
 } Command;
-void flCommand(Flashlight *fl, Command action);
+void flCommand(Flashlight *fl, Command command);
 
 #endif
-

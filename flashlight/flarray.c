@@ -35,8 +35,19 @@ void flArrayInject(flArray *p, void *v, int n)
     p->data[index] = v;
 }
 
+void flArrayReserve(flArray *p, int size)
+{
+    int newSize = p->count + size;
+    if(newSize > p->capacity)
+    {
+        p->capacity = newSize;
+        p->data = realloc(p->data, p->capacity * sizeof(char **));
+    }
+}
+
 int flArrayPush(flArray *p, void *v)
 {
+    // Not using flArrayReserve here as I want this to double at capacity
     if(p->count == p->capacity)
     {
         int newSize = (p->capacity) ? p->capacity * 2 : 2;

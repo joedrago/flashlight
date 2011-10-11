@@ -3,8 +3,11 @@ project(flashlight)
 
 set(flashlight_srcs
     flashlight.c
+    flashlight.h
     flarray.c
+    flarray.h
     flwalk.c
+    flwalk.h
 )
 
 if(UNIX)

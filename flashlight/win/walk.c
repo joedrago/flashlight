@@ -70,7 +70,7 @@ int walkNext(Walk *walk)
 
         if(wwalkdir->h == INVALID_HANDLE_VALUE)
         {
-            char fullpath[WALK_MAXLEN+1];
+            char fullpath[WALK_MAXLEN + 1];
             strcpy(fullpath, wwalkdir->path);
             strcat(fullpath, "\\*");
             wwalkdir->h = FindFirstFile(fullpath, &wwalk->wfd);
@@ -83,7 +83,7 @@ int walkNext(Walk *walk)
 
         if(haveFilename)
         {
-            char fullpath[WALK_MAXLEN+1];
+            char fullpath[WALK_MAXLEN + 1];
             strcpy(fullpath, wwalkdir->path);
             strcat(fullpath, "\\");
             strcat(fullpath, wwalk->wfd.cFileName);

@@ -28,4 +28,7 @@ endif()
 add_subdirectory(external)
 add_subdirectory(flashlight)
 add_subdirectory(flconsole)
+if(NOT UNIX)
+    add_subdirectory(flwindow)
+endif()
 
