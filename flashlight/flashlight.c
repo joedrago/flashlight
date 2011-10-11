@@ -81,10 +81,11 @@ static cJSON *loadConfig(const char *filename)
 }
 
 
-Flashlight *flCreate(const char *configFilename)
+Flashlight *flCreate(const char *configFilename, int viewHeight)
 {
     Flashlight *fl = calloc(sizeof(*fl), 1);
     fl->configFilename = strdup(configFilename);
+    fl->viewHeight = viewHeight;
     flReload(fl);
     return fl;
 }
@@ -229,10 +230,17 @@ void flRefreshFiles(List *l)
     walkDestroy(walk);
 }
 
+static void flViewReset(Flashlight *fl)
+{
+    fl->view.count = 0;
+    fl->viewOffset = 0;
+    fl->viewIndex = 0;
+}
+
 static void flThink(Flashlight *fl)
 {
     int i;
-    fl->view.count = 0;
+    flViewReset(fl);
     for(i=0; i<fl->lists.count; i++)
     {
         int j;
@@ -260,7 +268,7 @@ void flRefresh(Flashlight *fl)
     flThink(fl);
 }
 
-void flKey(Flashlight *fl, int key)
+void flKey(Flashlight *fl, KeyType type, int key)
 {
     //printf("KEY: %d\n", key);
     if(key == BACKSPACE)
@@ -269,18 +277,21 @@ void flKey(Flashlight *fl, int key)
         {
             fl->searchLen--;
             fl->search[fl->searchLen] = 0;
+            flThink(fl);
         }
     }
     else if(key == 10)
     {
         fl->searchLen = 0;
         fl->search[fl->searchLen] = 0;
+        flThink(fl);
     }
     else if(key == 18)
     {
         flRefresh(fl);
         fl->searchLen = 0;
         fl->search[fl->searchLen] = 0;
+        flThink(fl);
     }
     else if(key > 31 && key < 127)
     {
@@ -289,8 +300,21 @@ void flKey(Flashlight *fl, int key)
             fl->searchLen++;
             fl->search[fl->searchLen-1] = key;
             fl->search[fl->searchLen] = 0;
+            flThink(fl);
         }
     }
-    flThink(fl);
+    else if((key == 11)
+         || (key == 12))
+    {
+        if(fl->view.count)
+        {
+            fl->viewIndex += (key == 11) ? 1 : -1;
+            if(fl->viewIndex < 0)
+                fl->viewIndex = 0;
+            if(fl->viewIndex >= fl->view.count)
+                fl->viewIndex = fl->view.count - 1;
+            // Adjust viewOffset based on viewIndex and viewHeight
+        }
+    }
 }
 

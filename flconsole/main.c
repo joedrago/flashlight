@@ -44,24 +44,27 @@ int main(int argc, char **argv)
     _CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 #endif
     {
-        Flashlight *fl = flCreate(CONFIG_FILENAME);
+        Flashlight *fl = flCreate(CONFIG_FILENAME, 10);
         int i;
         int show;
         int key;
         while(1)
         {
             show = fl->view.count;
-            if(show > 10)
-                show = 10;
+            if(show > fl->viewHeight)
+                show = fl->viewHeight;
             system(CLEARSCREEN_COMMAND);
             printf("[%5d] Search: %s\n", fl->view.count, fl->search);
             for(i=0; i<show; i++)
             {
-                ListEntry *e = fl->view.data[i];
-                printf(" * %s\n", e->path);
+                int currIndex = i + fl->viewOffset;
+                ListEntry *e = fl->view.data[currIndex];
+                if(currIndex == fl->viewIndex)
+                    printf(" * ");
+                printf(" %s\n", e->path);
             }
             key = getkey();
-            flKey(fl, key);
+            flKey(fl, KT_NORMAL, key);
             if(key == ' ')
                 break;
         }
