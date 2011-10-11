@@ -1,0 +1,15 @@
+{
+    "lists" : [
+        {
+            "type" : "files",
+            "path" : "C:\\Users\\joe\\Documents\\work",
+            "extensions" : "cpp;h"
+        }
+    ],
+    "actions" : [
+    ],
+    "rules" : [
+    ],
+    "keybinds" : [
+    ]
+}

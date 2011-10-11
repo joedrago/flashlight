@@ -2,6 +2,7 @@
 #include <windows.h>
 
 #include "flashlight.h"
+#include "image.h"
 
 #define FL_WINDOW_TITLE "Flashlight"
 #define FL_WINDOW_CLASS "FlashlightWindow"
@@ -9,13 +10,18 @@
 static Flashlight *sFlashlight = NULL;
 static HWND sWindow = INVALID_HANDLE_VALUE;
 
+static Image *sImage = NULL;
+
 static void flashlightStartup()
 {
-    sFlashlight = flCreate("win.json", 3);
+    sFlashlight = flCreate("config.json", 3);
+    sImage = imageCreate("test.png");
 }
 
 static void flashlightShutdown()
 {
+    imageDestroy(sImage);
+    sImage = NULL;
     flDestroy(sFlashlight);
     sFlashlight = NULL;
 }
@@ -38,6 +44,7 @@ static void flashlightDraw()
     dc = BeginPaint(sWindow, &ps);
     GetClientRect(sWindow, &clientRect);
     BitBlt(dc, 0, 0, clientRect.right, clientRect.bottom, NULL, 0, 0, BLACKNESS);
+    imageDraw(sImage, dc, 0, 0);
 
     show = fl->view.count;
     if(show > fl->viewHeight)
@@ -103,6 +110,8 @@ static int prepareWindow(HINSTANCE inst)
     if(!sWindow)
         return 0;
 
+    SetWindowLong(sWindow, GWL_STYLE, GetWindowLong(sWindow, GWL_STYLE) & ~(WS_CAPTION | WS_BORDER | WS_THICKFRAME));
+    SetWindowPos(sWindow, 0, 0, 0, 300, 300, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
     ShowWindow(sWindow, SW_SHOW);
     UpdateWindow(sWindow);
     return 1;

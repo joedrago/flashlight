@@ -1,0 +1,30 @@
+
+if(MSVC)
+	set(CMAKE_C_FLAGS /wd4996)
+endif()
+
+project(libpng)
+
+include_directories(${zlib_SOURCE_DIR})
+set(LIBPNG_SRCS
+    png.c
+    pngerror.c
+    pnggccrd.c
+    pngget.c
+    pngmem.c
+    pngpread.c
+    pngread.c
+    pngrio.c
+    pngrtran.c
+    pngrutil.c
+    pngset.c
+    pngtest.c
+    pngtrans.c
+    pngvcrd.c
+    pngwio.c
+    pngwrite.c
+    pngwtran.c
+    pngwutil.c
+)
+add_library(libpng ${LIBPNG_SRCS})
+

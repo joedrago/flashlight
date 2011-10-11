@@ -83,7 +83,7 @@ static cJSON *loadConfig(const char *filename)
 
 Flashlight *flCreate(const char *configFilename, int viewHeight)
 {
-    Flashlight *fl = calloc(sizeof(*fl), 1);
+    Flashlight *fl = calloc(1, sizeof(*fl));
     fl->configFilename = strdup(configFilename);
     fl->viewHeight = viewHeight;
     flReload(fl);
@@ -153,7 +153,7 @@ static void flParseExtensions(List *list, const char *extensions)
             int len = (int)(p - front);
             if(len > 0)
             {
-                char *text = calloc(len + 1, 1);
+                char *text = calloc(1, len + 1);
                 memcpy(text, front, len);
                 flArrayPush(&list->extensions, text);
                 front = p + 1;
@@ -176,7 +176,7 @@ static void flBuild(Flashlight *fl)
         for(i = 0; i < count; i++)
         {
             cJSON *listData = cJSON_GetArrayItem(lists, i);
-            List *list = calloc(sizeof(*list), 1);
+            List *list = calloc(1, sizeof(*list));
             list->type = LT_FILES;
             list->path = getString(listData, "path");
             flParseExtensions(list, getString(listData, "extensions"));
@@ -221,7 +221,7 @@ void flRefreshFiles(List *l)
     {
         if(isValidExtension(l, walk->currentExtension))
         {
-            ListEntry *entry = calloc(sizeof(*entry), 1);
+            ListEntry *entry = calloc(1, sizeof(*entry));
             entry->path = strdup(walk->currentPath);
             entry->list = l;
             flArrayPush(&l->entries, entry);

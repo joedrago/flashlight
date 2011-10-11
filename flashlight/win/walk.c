@@ -23,14 +23,14 @@ typedef struct WinWalk
 
 Walk *walkCreate(struct List *list, const char *path)
 {
-    Walk *walk = calloc(sizeof(*walk), 1);
+    Walk *walk = calloc(1, sizeof(*walk));
     WinWalk *wwalk;
     WinWalkDir *wwalkdir;
 
     walk->list = list;
     walk->path = path;
-    wwalk = calloc(sizeof(*wwalk), 1);
-    wwalkdir = calloc(sizeof(*wwalkdir), 1);
+    wwalk = calloc(1, sizeof(*wwalk));
+    wwalkdir = calloc(1, sizeof(*wwalkdir));
     wwalkdir->path = strdup(path);
     wwalkdir->h = INVALID_HANDLE_VALUE;
     flArrayPush(&wwalk->dirs, wwalkdir);
@@ -92,7 +92,7 @@ int walkNext(Walk *walk)
             {
                 if(wwalk->wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
                 {
-                    wwalkdir = calloc(sizeof(*wwalkdir), 1);
+                    wwalkdir = calloc(1, sizeof(*wwalkdir));
                     wwalkdir->h = INVALID_HANDLE_VALUE;
                     wwalkdir->path = strdup(fullpath);
                     flArrayPush(&wwalk->dirs, wwalkdir);
