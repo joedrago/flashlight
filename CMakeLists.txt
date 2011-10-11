@@ -19,6 +19,13 @@ else()
     endif()
 endif()
 
+if(UNIX)
+    add_definitions(-DFL_UNIX=1)
+else()
+    add_definitions(-DFL_WINDOWS=1 -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
+endif()
+
 add_subdirectory(external)
 add_subdirectory(flashlight)
+add_subdirectory(flconsole)
 

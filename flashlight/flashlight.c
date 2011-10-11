@@ -4,8 +4,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "cjson.h"
+
+#ifdef FLASHLIGHT_UNIX
+#define BACKSPACE 127
+#else
+#define BACKSPACE 8
+#endif
 
 static const char *flstristr(const char *haystack, const char *needle)
 {
@@ -89,8 +96,23 @@ void flDestroy(Flashlight *fl)
     free(fl);
 }
 
+void listEntryDestroy(ListEntry *e)
+{
+    free(e->path);
+    free(e);
+}
+
+static void listDestroy(List *l)
+{
+    flArrayClear(&l->entries, listEntryDestroy);
+    flArrayClear(&l->extensions, free);
+    free(l);
+}
+
 void flClear(Flashlight *fl)
 {
+    flArrayClear(&fl->view, NULL);
+    flArrayClear(&fl->lists, listDestroy);
     if(fl->jsonData)
     {
         cJSON_Delete((cJSON*)fl->jsonData);
@@ -187,12 +209,7 @@ static int isValidExtension(List *list, const char *ext)
 
 void flClearFiles(List *l)
 {
-    ListEntry *e;
-    while(e = flArrayPop(&l->entries))
-    {
-        free(e->path);
-        free(e);
-    }
+    flArrayClear(&l->entries, listEntryDestroy);
 }
 
 void flRefreshFiles(List *l)
@@ -246,7 +263,7 @@ void flRefresh(Flashlight *fl)
 void flKey(Flashlight *fl, int key)
 {
     //printf("KEY: %d\n", key);
-    if(key == 127)
+    if(key == BACKSPACE)
     {
         if(fl->searchLen > 0)
         {

@@ -1,0 +1,15 @@
+{
+    "lists" : [
+        {
+            "type" : "files",
+            "path" : "c:\\work\\bowser32",
+            "extensions" : "cpp;h"
+        }
+    ],
+    "actions" : [
+    ],
+    "rules" : [
+    ],
+    "keybinds" : [
+    ]
+}
