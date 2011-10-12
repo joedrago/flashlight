@@ -118,3 +118,114 @@ void imageDraw(Image *image, HDC dc, int x, int y)
                   DIB_RGB_COLORS,
                   SRCCOPY);
 }
+
+void imageDrawBackground(Image *image, HDC dc, int w, int h)
+{
+    int sw = image->width;
+    int sh = image->height;
+    int dw = w;
+    int dh = h;
+    int hsw = sw / 2;
+    int hsh = sh / 2;
+    int hdw = dw / 2;
+    int hdh = dh / 2;
+
+    // center/fill
+    StretchDIBits(dc,
+                  0, 0,
+                  dw, dh,
+                  hsw - 2, hsh - 2,
+                  4, 4,
+                  image->bits,
+                  &image->bitmapInfo,
+                  DIB_RGB_COLORS,
+                  SRCCOPY);
+
+    // left edge
+    StretchDIBits(dc,
+                  0, 0,
+                  hsw, dh,
+                  0, hsh - 2,
+                  hsw, 4,
+                  image->bits,
+                  &image->bitmapInfo,
+                  DIB_RGB_COLORS,
+                  SRCCOPY);
+
+    // right edge
+    StretchDIBits(dc,
+                  dw - hsw, 0,
+                  hsw, dh,
+                  hsw, hsh - 2,
+                  hsw, 4,
+                  image->bits,
+                  &image->bitmapInfo,
+                  DIB_RGB_COLORS,
+                  SRCCOPY);
+
+    // top edge
+    StretchDIBits(dc,
+                  0, 0,
+                  dw, hsh,
+                  hsw - 2, hsh,
+                  4, hsh,
+                  image->bits,
+                  &image->bitmapInfo,
+                  DIB_RGB_COLORS,
+                  SRCCOPY);
+
+    // bottom edge
+    StretchDIBits(dc,
+                  0, dh - hsh,
+                  dw, hsh,
+                  hsw - 2, 0,
+                  4, hsh,
+                  image->bits,
+                  &image->bitmapInfo,
+                  DIB_RGB_COLORS,
+                  SRCCOPY);
+
+    // top left
+    StretchDIBits(dc,
+                  0, 0,
+                  hsw, hsh,
+                  0, hsh,
+                  hsw, hsh,
+                  image->bits,
+                  &image->bitmapInfo,
+                  DIB_RGB_COLORS,
+                  SRCCOPY);
+
+    // top right
+    StretchDIBits(dc,
+                  dw - hsw, 0,
+                  hsw, hsh,
+                  hsw, hsh,
+                  hsw, hsh,
+                  image->bits,
+                  &image->bitmapInfo,
+                  DIB_RGB_COLORS,
+                  SRCCOPY);
+
+    // bottom left
+    StretchDIBits(dc,
+                  0, dh - hsh,
+                  hsw, hsh,
+                  0, 0,
+                  hsw, hsh,
+                  image->bits,
+                  &image->bitmapInfo,
+                  DIB_RGB_COLORS,
+                  SRCCOPY);
+
+    // bottom right
+    StretchDIBits(dc,
+                  dw - hsw, dh - hsh,
+                  hsw, hsh,
+                  hsw, 0,
+                  hsw, hsh,
+                  image->bits,
+                  &image->bitmapInfo,
+                  DIB_RGB_COLORS,
+                  SRCCOPY);
+}

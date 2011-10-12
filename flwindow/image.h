@@ -17,4 +17,6 @@ void imageDestroy(Image *image);
 
 void imageDraw(Image *image, HDC dc, int x, int y);
 
+void imageDrawBackground(Image *image, HDC dc, int w, int h);
+
 #endif
