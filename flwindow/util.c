@@ -5,10 +5,15 @@
 
 const char *flashlightPath(const char *n1, const char *n2, const char *n3)
 {
-    static char sBasePath[MAX_PATH] = ".";//{0};
+    static char sBasePath[MAX_PATH] = {0};
     static char ret[MAX_PATH];
     if(sBasePath[0] == 0)
+    {
+        char *p;
         GetModuleFileName(GetModuleHandle(NULL), sBasePath, MAX_PATH);
+        p = strrchr(sBasePath, '\\');
+        if(p) *p = 0;
+    }
     strcpy(ret, sBasePath);
     if(n1)
     {
