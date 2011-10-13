@@ -19,6 +19,7 @@ if(UNIX)
 else()
     set(flashlight_srcs ${flashlight_srcs}
         win/walk.c
+        win/exec.c
     )
 endif()
 

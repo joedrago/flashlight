@@ -31,6 +31,44 @@ typedef struct List
 
 // --------------------------------------------------------------------------------------
 
+typedef enum SpecialKey
+{
+    SK_UP = 1,
+    SK_DOWN,
+    SK_LEFT,
+    SK_RIGHT,
+
+    SK_COUNT
+} SpecialKey;
+
+typedef enum KeyType
+{
+    KT_UNKNOWN = 0,
+    KT_NORMAL,
+    KT_CONTROL,
+    KT_SPECIAL,
+
+    KT_COUNT
+} KeyType;
+
+// --------------------------------------------------------------------------------------
+
+typedef enum Command
+{
+    COMMAND_NONE = 0,
+    COMMAND_CLEAR,
+    COMMAND_ACTION,
+    COMMAND_RELOAD,
+    COMMAND_VIEW_PREV,
+    COMMAND_VIEW_NEXT,
+    COMMAND_ACTION_PREV,
+    COMMAND_ACTION_NEXT,
+
+    COMMAND_COUNT
+} Command;
+
+// --------------------------------------------------------------------------------------
+
 typedef struct Action
 {
     const char *name;
@@ -41,8 +79,19 @@ typedef struct Action
 
 typedef struct Rule
 {
-    const char *action;
+    const char *extension;
+    Action *action;
 } Rule;
+
+// --------------------------------------------------------------------------------------
+
+typedef struct Bind
+{
+    KeyType keyType;
+    int key;
+    const char *action;
+    Command command;
+} Bind;
 
 // --------------------------------------------------------------------------------------
 
@@ -52,13 +101,17 @@ typedef struct Flashlight
 {
     char *configFilename;
     flArray lists;
-    flArray actions;
+    flArray binds;
     flArray rules;
+    flArray actions;
 
     flArray view; // ListEntry*
     int viewHeight;
     int viewOffset;
     int viewIndex;
+
+    flArray viewActions;
+    int viewActionIndex;
 
     char search[SEARCH_MAXLEN + 1];
     int searchLen;
@@ -73,28 +126,8 @@ void flDestroy(Flashlight *fl);
 void flClear(Flashlight *fl);
 void flReload(Flashlight *fl);  // rereads configuration, does refresh
 void flRefresh(Flashlight *fl); // refreshes list caches
-
-typedef enum KeyType
-{
-    KT_NORMAL = 0,
-    KT_CONTROL,
-
-    KT_COUNT
-} KeyType;
-
+void flAction(Flashlight *fl);  // Performs currently selected action on currently selected text
 void flKey(Flashlight *fl, KeyType type, int key);
-
-typedef enum Command
-{
-    COMMAND_NONE = 0,
-    COMMAND_RELOAD,
-    COMMAND_VIEW_PREV,
-    COMMAND_VIEW_NEXT,
-    COMMAND_ACTION_PREV,
-    COMMAND_ACTION_NEXT,
-
-    COMMAND_COUNT
-} Command;
 void flCommand(Flashlight *fl, Command command);
 
 #endif

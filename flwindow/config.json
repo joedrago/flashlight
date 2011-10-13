@@ -8,9 +8,34 @@
         }
     ],
     "actions" : [
+        {
+            "name" : "Open",
+            "icon" : "open.ico",
+            "exec" : "notepad !*!"
+        }
     ],
     "rules" : [
+        {
+            "extension" : "cpp",
+            "action" : "Open"
+        },
+        {
+            "extension" : "h",
+            "action" : "Open"
+        }
     ],
-    "keybinds" : [
+    "binds" : [
+        {
+            "key" : "down",
+            "command" : "viewNext"
+        },
+        {
+            "key" : "up",
+            "command" : "viewPrev"
+        },
+        {
+            "key" : "l",
+            "command" : "clear"
+        }
     ]
 }

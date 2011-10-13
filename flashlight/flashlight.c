@@ -1,5 +1,6 @@
 #include "flashlight.h"
 #include "flwalk.h"
+#include "flexec.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -12,6 +13,55 @@
 #else
 #define BACKSPACE 8
 #endif
+
+static struct SpecialKeyTable
+{
+    const char *name;
+    int key;
+} sKeyTable[] =
+{
+    {"up", SK_UP },
+    {"down", SK_DOWN },
+    {"left", SK_LEFT },
+    {"right", SK_RIGHT },
+    {0, 0}
+};
+
+static int nameToKey(const char *name)
+{
+    struct SpecialKeyTable *p = sKeyTable;
+    while(p->name)
+    {
+        if(!strcmp(p->name, name))
+            return p->key;
+        p++;
+    }
+    return 0;
+}
+
+static struct CommandNameTable
+{
+    const char *name;
+    Command command;
+} sCommandNameTable[] =
+{
+    {"clear", COMMAND_CLEAR },
+    {"viewNext", COMMAND_VIEW_NEXT },
+    {"viewPrev", COMMAND_VIEW_PREV },
+    {0, 0}
+};
+
+static int nameToCommand(const char *name)
+{
+    struct CommandNameTable *p = sCommandNameTable;
+    while(p->name)
+    {
+        if(!strcmp(p->name, name))
+            return p->command;
+        p++;
+    }
+    return COMMAND_NONE;
+}
 
 static const char *flstristr(const char *haystack, const char *needle)
 {
@@ -109,10 +159,16 @@ static void listDestroy(List *l)
     free(l);
 }
 
+static void ruleDestroy(Rule *r)
+{
+    free(r);
+}
+
 void flClear(Flashlight *fl)
 {
     flArrayClear(&fl->view, NULL);
     flArrayClear(&fl->lists, (flDestroyCB)listDestroy);
+    flArrayClear(&fl->rules, (flDestroyCB)ruleDestroy);
     if(fl->jsonData)
     {
         cJSON_Delete((cJSON *)fl->jsonData);
@@ -164,10 +220,27 @@ static void flParseExtensions(List *list, const char *extensions)
     }
 }
 
+static Action *findAction(flArray *actions, const char *name)
+{
+    int i;
+    for(i = 0; i < actions->count; i++)
+    {
+        Action *action = actions->data[i];
+        if(!strcmp(action->name, name))
+        {
+            return action;
+        }
+    }
+    return NULL;
+}
+
 static void flBuild(Flashlight *fl)
 {
     cJSON *json = (cJSON *)fl->jsonData;
     cJSON *lists = cJSON_GetObjectItem(json, "lists");
+    cJSON *actions = cJSON_GetObjectItem(json, "actions");
+    cJSON *rules = cJSON_GetObjectItem(json, "rules");
+    cJSON *binds = cJSON_GetObjectItem(json, "binds");
     if(lists && (lists->type == cJSON_Array))
     {
         int count = cJSON_GetArraySize(lists);
@@ -180,6 +253,73 @@ static void flBuild(Flashlight *fl)
             list->path = getString(listData, "path");
             flParseExtensions(list, getString(listData, "extensions"));
             flArrayPush(&fl->lists, list);
+        }
+    }
+    if(binds && (binds->type == cJSON_Array))
+    {
+        int count = cJSON_GetArraySize(binds);
+        int i;
+        for(i = 0; i < count; i++)
+        {
+            cJSON *bindData = cJSON_GetArrayItem(binds, i);
+            Bind *bind = calloc(1, sizeof(*bind));
+            Command command = nameToCommand(getString(bindData, "command"));
+            const char *keyStr = getString(bindData, "key");
+            int keyLen = strlen(keyStr);
+            if(keyLen > 1)
+            {
+                bind->key = nameToKey(keyStr);
+                if(bind->key)
+                    bind->keyType = KT_SPECIAL;
+            }
+            else
+            {
+                bind->keyType = KT_CONTROL;
+                bind->key = keyStr[0] - 96; // converts 'a' -> 1
+            }
+            if((bind->key == 0) || (bind->keyType == KT_UNKNOWN) || (command == COMMAND_NONE))
+            {
+                free(bind);
+            }
+            else
+            {
+                bind->action = getString(bindData, "action");
+                bind->command = command;
+                flArrayPush(&fl->binds, bind);
+            }
+        }
+    }
+    if(actions && (actions->type == cJSON_Array))
+    {
+        int count = cJSON_GetArraySize(actions);
+        int i;
+        for(i = 0; i < count; i++)
+        {
+            cJSON *actionData = cJSON_GetArrayItem(actions, i);
+            Action *action = calloc(1, sizeof(*action));
+            action->name = getString(actionData, "name");
+            action->exec = getString(actionData, "exec");
+            flArrayPush(&fl->actions, action);
+        }
+    }
+    if(rules && (rules->type == cJSON_Array))
+    {
+        int count = cJSON_GetArraySize(rules);
+        int i;
+        for(i = 0; i < count; i++)
+        {
+            cJSON *ruleData = cJSON_GetArrayItem(rules, i);
+            Rule *rule = calloc(1, sizeof(*rule));
+            rule->extension = getString(ruleData, "extension");
+            rule->action = findAction(&fl->actions, getString(ruleData, "action"));
+            if(rule->action && rule->extension)
+            {
+                flArrayPush(&fl->rules, rule);
+            }
+            else
+            {
+                free(rule);
+            }
         }
     }
 }
@@ -234,6 +374,43 @@ static void flViewReset(Flashlight *fl)
     fl->view.count = 0;
     fl->viewOffset = 0;
     fl->viewIndex = 0;
+
+    fl->viewActions.count = 0;
+    fl->viewActionIndex = 0;
+}
+
+static int extensionMatches(const char *path, const char *ext)
+{
+    const char *pathExt = strrchr(path, '.');
+    if(pathExt)
+        pathExt++;
+    if(!strcmp(pathExt, ext))
+        return 1;
+    return 0;
+}
+
+static void flMatchActions(Flashlight *fl)
+{
+    fl->viewActions.count = 0;
+    fl->viewActionIndex = 0;
+    if(fl->view.count < 1)
+    {
+        return;
+    }
+    else
+    {
+        int i;
+        ListEntry *listEntry = fl->view.data[fl->viewIndex];
+        const char *selectedPath = listEntry->path;
+        for(i = 0; i < fl->rules.count; i++)
+        {
+            Rule *rule = fl->rules.data[i];
+            if(extensionMatches(selectedPath, rule->extension))
+            {
+                flArrayPush(&fl->viewActions, rule->action);
+            }
+        }
+    }
 }
 
 static void flThink(Flashlight *fl)
@@ -261,6 +438,7 @@ static void flThink(Flashlight *fl)
             }
         }
     }
+    flMatchActions(fl);
 }
 
 void flRefresh(Flashlight *fl)
@@ -276,46 +454,59 @@ void flRefresh(Flashlight *fl)
 
 void flKey(Flashlight *fl, KeyType type, int key)
 {
-    //printf("KEY: %d\n", key);
-    if(key == BACKSPACE)
+    if((type == KT_CONTROL) || (type == KT_SPECIAL))
     {
-        if(fl->searchLen > 0)
+        int i;
+        for(i = 0; i < fl->binds.count; i++)
         {
-            fl->searchLen--;
+            Bind *bind = fl->binds.data[i];
+            if((bind->key == key) && (bind->keyType == type))
+            {
+                flCommand(fl, bind->command);
+            }
+        }
+    }
+    else if(type == KT_NORMAL)
+    {
+        //printf("KEY: %d\n", key);
+        if(key == BACKSPACE)
+        {
+            if(fl->searchLen > 0)
+            {
+                fl->searchLen--;
+                fl->search[fl->searchLen] = 0;
+                flThink(fl);
+            }
+        }
+        else if((key == 10) || (key == 13))
+        {
+            flCommand(fl, COMMAND_ACTION);
+        }
+        else if(key == 18)
+        {
+            flRefresh(fl);
+            fl->searchLen = 0;
             fl->search[fl->searchLen] = 0;
             flThink(fl);
         }
-    }
-    else if((key == 10) || (key == 13))
-    {
-        fl->searchLen = 0;
-        fl->search[fl->searchLen] = 0;
-        flThink(fl);
-    }
-    else if(key == 18)
-    {
-        flRefresh(fl);
-        fl->searchLen = 0;
-        fl->search[fl->searchLen] = 0;
-        flThink(fl);
-    }
-    else if(key > 31 && key < 127)
-    {
-        if(fl->searchLen < SEARCH_MAXLEN)
+        else if(key > 31 && key < 127)
         {
-            fl->searchLen++;
-            fl->search[fl->searchLen - 1] = key;
-            fl->search[fl->searchLen] = 0;
-            flThink(fl);
+            if(fl->searchLen < SEARCH_MAXLEN)
+            {
+                fl->searchLen++;
+                fl->search[fl->searchLen - 1] = key;
+                fl->search[fl->searchLen] = 0;
+                flThink(fl);
+            }
         }
-    }
-    else if(key == 11)
-    {
-        flCommand(fl, COMMAND_VIEW_PREV);
-    }
-    else if(key == 12)
-    {
-        flCommand(fl, COMMAND_VIEW_NEXT);
+        else if(key == 11)
+        {
+            flCommand(fl, COMMAND_VIEW_PREV);
+        }
+        else if(key == 12)
+        {
+            flCommand(fl, COMMAND_VIEW_NEXT);
+        }
     }
 }
 
@@ -325,7 +516,6 @@ static void flSetViewIndex(Flashlight *fl, int newIndex)
     {
         fl->viewOffset = 0;
         fl->viewIndex = 0;
-        return;
     }
     else
     {
@@ -339,6 +529,23 @@ static void flSetViewIndex(Flashlight *fl, int newIndex)
         else if(fl->viewIndex >= fl->viewOffset + fl->viewHeight)
             fl->viewOffset = fl->viewIndex - fl->viewHeight + 1;
     }
+    flMatchActions(fl);
+}
+
+
+void flAction(Flashlight *fl)
+{
+    if((fl->view.count == 0) || (fl->viewActions.count == 0))
+    {
+        return;
+    }
+    else
+    {
+        ListEntry *listEntry = fl->view.data[fl->viewIndex];
+        const char *selectedPath = listEntry->path;
+        Action *action = fl->viewActions.data[fl->viewActionIndex];
+        flExec(action, selectedPath);
+    }
 }
 
 void flCommand(Flashlight *fl, Command command)
@@ -348,6 +555,18 @@ void flCommand(Flashlight *fl, Command command)
     case COMMAND_RELOAD:
     {
         flReload(fl);
+        break;
+    }
+    case COMMAND_ACTION:
+    {
+        flAction(fl);
+        break;
+    }
+    case COMMAND_CLEAR:
+    {
+        fl->searchLen = 0;
+        fl->search[fl->searchLen] = 0;
+        flThink(fl);
         break;
     }
     case COMMAND_VIEW_PREV:

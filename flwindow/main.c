@@ -31,9 +31,9 @@ static void flashlightShutdown()
     sFlashlight = NULL;
 }
 
-static void keyPressed(int key)
+static void keyPressed(KeyType type, int key)
 {
-    flKey(sFlashlight, KT_NORMAL, key);
+    flKey(sFlashlight, type, key);
     InvalidateRect(sWindow, NULL, TRUE);
 }
 
@@ -112,8 +112,32 @@ static LRESULT CALLBACK wndProc(HWND window, UINT message, WPARAM wparam, LPARAM
 
     switch(message)
     {
+    case WM_KEYDOWN:
+        switch(wparam)
+        {
+        case VK_UP:
+            keyPressed(KT_SPECIAL, SK_UP);
+            break;
+        case VK_DOWN:
+            keyPressed(KT_SPECIAL, SK_DOWN);
+            break;
+        case VK_LEFT:
+            keyPressed(KT_SPECIAL, SK_LEFT);
+            break;
+        case VK_RIGHT:
+            keyPressed(KT_SPECIAL, SK_RIGHT);
+            break;
+        };
+        break;
     case WM_CHAR:
-        keyPressed((int)wparam);
+        if(GetKeyState(VK_CONTROL) & 0x8000)
+        {
+            keyPressed(KT_CONTROL, (int)wparam);
+        }
+        else if(wparam == VK_ESCAPE)
+            PostQuitMessage(0);
+        else
+            keyPressed(KT_NORMAL, (int)wparam);
         return 0;
     case WM_NCHITTEST:
         uHitTest = DefWindowProc(window, WM_NCHITTEST, wparam, lparam);
