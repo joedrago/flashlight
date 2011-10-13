@@ -5,6 +5,10 @@ set(flwindow_srcs
     image.c
     image.h
     main.c
+    theme.c
+    theme.h
+    util.c
+    util.h
 )
 
 include_directories(

@@ -1,0 +1,17 @@
+{
+    "font" : {
+        "name" : "Courier New",
+        "size" : 18,
+        "weight" : "bold"
+    },
+    "initialX" : 680,
+    "initialY" : 550,
+    "initialWidth" : 1000,
+    "initialHeight" : 500,
+    "images" : [
+        {
+            "type" : "border",
+            "filename" : "border.png"
+        }
+    ]
+}

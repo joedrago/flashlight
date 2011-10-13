@@ -5,6 +5,9 @@
 
 #include "flashlight.h"
 #include "image.h"
+#include "jpath.h"
+#include "theme.h"
+#include "util.h"
 
 #define FL_WINDOW_TITLE "Flashlight"
 #define FL_WINDOW_CLASS "FlashlightWindow"
@@ -13,26 +16,17 @@
 
 static Flashlight *sFlashlight = NULL;
 static HWND sWindow = INVALID_HANDLE_VALUE;
-static HFONT sFont = INVALID_HANDLE_VALUE;
-
-static Image *sImage = NULL;
+static Theme *sTheme = NULL;
 
 static void flashlightStartup()
 {
-    sFlashlight = flCreate("config.json", 55);
-    sImage = imageCreate("border.png");
-
-    //AddFontResourceEx("04b25.ttf", FR_PRIVATE|FR_NOT_ENUM, 0);
-    sFont = CreateFont(18, 0, 0, 0, /*FW_DONTCARE*/ FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
-                       CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, TEXT("Courier New"));
+    sFlashlight = flCreate(flashlightPath("config.json", NULL, NULL), 55);
+    sTheme = themeCreate(jpathGetString(sFlashlight->jsonData, "theme", "default"));
 }
 
 static void flashlightShutdown()
 {
-    DeleteObject(sFont);
-    sFont = INVALID_HANDLE_VALUE;
-    imageDestroy(sImage);
-    sImage = NULL;
+    themeDestroy(sTheme);
     flDestroy(sFlashlight);
     sFlashlight = NULL;
 }
@@ -56,14 +50,22 @@ static void flashlightDraw()
     dc = BeginPaint(sWindow, &ps);
     GetClientRect(sWindow, &clientRect);
     BitBlt(dc, 0, 0, clientRect.right, clientRect.bottom, NULL, 0, 0, BLACKNESS);
-    //imageDraw(sImage, dc, 0, 0);
-    imageDrawBackground(sImage, dc, clientRect.right, clientRect.bottom);
+
+    for(i = 0; i < sTheme->images.count; i++)
+    {
+        ThemeImage *themeImage = sTheme->images.data[i];
+        switch(themeImage->type)
+        {
+        case TIT_BORDER:
+            imageDrawBackground(themeImage->image, dc, clientRect.right, clientRect.bottom);
+        }
+    }
 
     show = fl->view.count;
     if(show > fl->viewHeight)
         show = fl->viewHeight;
 
-    SelectObject(dc, sFont);
+    SelectObject(dc, sTheme->font);
     SetBkMode(dc, TRANSPARENT);
     textRect.left = 10;
     textRect.top = 10;
@@ -182,7 +184,7 @@ static int prepareWindow(HINSTANCE inst)
         return 0;
 
     SetWindowLong(sWindow, GWL_STYLE, GetWindowLong(sWindow, GWL_STYLE) & ~(WS_CAPTION | WS_BORDER | WS_THICKFRAME));
-    SetWindowPos(sWindow, 0, 0, 0, 800, 500, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
+    SetWindowPos(sWindow, 0, sTheme->initialX, sTheme->initialY, sTheme->initialWidth, sTheme->initialHeight, SWP_NOZORDER | SWP_FRAMECHANGED);
     ShowWindow(sWindow, SW_SHOW);
     UpdateWindow(sWindow);
     return 1;

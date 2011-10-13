@@ -1,7 +1,10 @@
 #ifndef FLASHLIGHT_H
 #define FLASHLIGHT_H
 
+#include <stdlib.h>
+
 #include "flarray.h"
+#include "cJSON.h"
 
 // --------------------------------------------------------------------------------------
 
@@ -28,12 +31,29 @@ typedef struct List
 
 // --------------------------------------------------------------------------------------
 
+typedef struct Action
+{
+    const char *name;
+    const char *exec;
+} Action;
+
+// --------------------------------------------------------------------------------------
+
+typedef struct Rule
+{
+    const char *action;
+} Rule;
+
+// --------------------------------------------------------------------------------------
+
 #define SEARCH_MAXLEN 1023
 
 typedef struct Flashlight
 {
     char *configFilename;
     flArray lists;
+    flArray actions;
+    flArray rules;
 
     flArray view; // ListEntry*
     int viewHeight;
@@ -43,8 +63,10 @@ typedef struct Flashlight
     char search[SEARCH_MAXLEN + 1];
     int searchLen;
 
-    void *jsonData;
+    cJSON *jsonData;
 } Flashlight;
+
+cJSON *flLoadJSON(const char *filename);
 
 Flashlight *flCreate(const char *configFilename, int viewHeight);
 void flDestroy(Flashlight *fl);

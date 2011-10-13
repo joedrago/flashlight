@@ -1,4 +1,5 @@
 {
+    "theme" : "hurr",
     "lists" : [
         {
             "type" : "files",

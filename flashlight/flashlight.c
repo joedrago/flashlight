@@ -1,7 +1,6 @@
 #include "flashlight.h"
 #include "flwalk.h"
 
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -44,7 +43,7 @@ static const char *flstristr(const char *haystack, const char *needle)
     return 0;
 }
 
-static cJSON *loadConfig(const char *filename)
+cJSON *flLoadJSON(const char *filename)
 {
     cJSON *config = NULL;
     FILE *f = fopen(filename, "rb");
@@ -189,7 +188,7 @@ void flReload(Flashlight *fl)
 {
     flClear(fl);
 
-    fl->jsonData = loadConfig(fl->configFilename);
+    fl->jsonData = flLoadJSON(fl->configFilename);
     if(!fl->jsonData)
         return;
 

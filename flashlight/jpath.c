@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static cJSON *jpathGet(cJSON *json, const char *path)
+cJSON *jpathGet(cJSON *json, const char *path)
 {
     cJSON *node = json;
     char tempPath[1024];
@@ -38,3 +38,17 @@ int jpathGetInt(cJSON *json, const char *path, int def)
     return def;
 }
 
+int jpathGetBool(cJSON *json, const char *path, int def)
+{
+    cJSON *node = jpathGet(json, path);
+    if(node)
+    {
+        if(node->type == cJSON_Number)
+            return (node->valueint) ? 1 : 0;
+        if(node->type == cJSON_True)
+            return 1;
+        if(node->type == cJSON_False)
+            return 0;
+    }
+    return def;
+}
