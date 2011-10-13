@@ -18,10 +18,13 @@ static Flashlight *sFlashlight = NULL;
 static HWND sWindow = INVALID_HANDLE_VALUE;
 static Theme *sTheme = NULL;
 
+void onFlashlightEvent(struct Flashlight *fl, FlashlightEvent e);
+
 static void flashlightStartup()
 {
-    sFlashlight = flCreate(flashlightPath("config.json", NULL, NULL), 55);
+    sFlashlight = flCreate(flashlightPath("config.json", NULL, NULL));
     sTheme = themeCreate(jpathGetString(sFlashlight->jsonData, "theme", "default"));
+    flSetEventFunc(sFlashlight, onFlashlightEvent);
 }
 
 static void flashlightShutdown()
@@ -31,10 +34,29 @@ static void flashlightShutdown()
     sFlashlight = NULL;
 }
 
+static void flashlightHide()
+{
+    ShowWindow(sWindow, SW_HIDE);
+}
+
+static void flashlightShow()
+{
+    ShowWindow(sWindow, SW_HIDE);
+    ShowWindow(sWindow, SW_SHOW);
+}
+
 static void keyPressed(KeyType type, int key)
 {
     flKey(sFlashlight, type, key);
     InvalidateRect(sWindow, NULL, TRUE);
+}
+
+static void getListRect(RECT *outputRect, RECT *clientRect, int i)
+{
+    outputRect->left = sTheme->listMargins.left;
+    outputRect->top = sTheme->listMargins.top + (i * sTheme->textHeight);
+    outputRect->right = clientRect->right - sTheme->listMargins.right;
+    outputRect->bottom = clientRect->bottom - sTheme->listMargins.bottom;
 }
 
 static void flashlightDraw()
@@ -92,16 +114,30 @@ static void flashlightDraw()
             SetTextColor(dc, sTheme->listTextActiveColor);
         else
             SetTextColor(dc, sTheme->listTextInactiveColor);
-        textRect.left = sTheme->listMargins.left;
-        textRect.top = sTheme->listMargins.top + (i * sTheme->textHeight);
-        textRect.right = clientRect.right - sTheme->listMargins.right;
-        textRect.bottom = clientRect.bottom - sTheme->listMargins.bottom;
+        getListRect(&textRect, &clientRect, i);
         DrawText(dc, e->path, strlen(e->path), &textRect, DT_SINGLELINE);
         //    printf(" * ");
         //printf(" %s\n", e->path);
     }
 
     EndPaint(sWindow, &ps);
+}
+
+void flashlightResize()
+{
+    RECT clientRect;
+    RECT listRect;
+    int height;
+    if(sWindow == INVALID_HANDLE_VALUE)
+        return;
+    if(sTheme->textHeight == 0)
+        return;
+    GetClientRect(sWindow, &clientRect);
+    getListRect(&listRect, &clientRect, 0);
+    height = ((listRect.bottom - listRect.top) / sTheme->textHeight);
+    if(height < 1)
+        height = 1;
+    flSetViewHeight(sFlashlight, height);
 }
 
 static LRESULT CALLBACK wndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
@@ -132,13 +168,16 @@ static LRESULT CALLBACK wndProc(HWND window, UINT message, WPARAM wparam, LPARAM
             break;
         };
         break;
+    case WM_HOTKEY:
+        flashlightShow();
+        break;
     case WM_CHAR:
         if(GetKeyState(VK_CONTROL) & 0x8000)
         {
             keyPressed(KT_CONTROL, (int)wparam);
         }
         else if(wparam == VK_ESCAPE)
-            PostQuitMessage(0);
+            flashlightHide();
         else
             keyPressed(KT_NORMAL, (int)wparam);
         return 0;
@@ -181,6 +220,9 @@ static LRESULT CALLBACK wndProc(HWND window, UINT message, WPARAM wparam, LPARAM
     case WM_PAINT:
         flashlightDraw();
         break;
+    case WM_SIZE:
+        flashlightResize();
+        break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
@@ -214,6 +256,12 @@ static int prepareWindow(HINSTANCE inst)
     SetWindowPos(sWindow, 0, sTheme->initialX, sTheme->initialY, sTheme->initialWidth, sTheme->initialHeight, SWP_NOZORDER | SWP_FRAMECHANGED);
     ShowWindow(sWindow, SW_SHOW);
     UpdateWindow(sWindow);
+
+    if(!RegisterHotKey(sWindow, 1, MOD_WIN, 'O'))
+    {
+        MessageBox(NULL, "Cant get hotkey", "flashlight", MB_OK);
+    }
+
     return 1;
 }
 
@@ -240,3 +288,10 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE prevInst, LPTSTR cmdline, int sho
     return ret;
 }
 
+void onFlashlightEvent(struct Flashlight *fl, FlashlightEvent e)
+{
+    if(e != FE_ACTION)
+        return;
+
+    flashlightHide();
+}

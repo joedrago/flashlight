@@ -130,11 +130,11 @@ cJSON *flLoadJSON(const char *filename)
 }
 
 
-Flashlight *flCreate(const char *configFilename, int viewHeight)
+Flashlight *flCreate(const char *configFilename)
 {
     Flashlight *fl = calloc(1, sizeof(*fl));
     fl->configFilename = strdup(configFilename);
-    fl->viewHeight = viewHeight;
+    fl->viewHeight = 1;
     flReload(fl);
     return fl;
 }
@@ -545,6 +545,8 @@ void flAction(Flashlight *fl)
         const char *selectedPath = listEntry->path;
         Action *action = fl->viewActions.data[fl->viewActionIndex];
         flExec(action, selectedPath);
+        if(fl->eventFunc)
+            fl->eventFunc(fl, FE_ACTION);
     }
 }
 
@@ -588,4 +590,15 @@ void flCommand(Flashlight *fl, Command command)
         break;
     }
     }
+}
+
+void flSetEventFunc(Flashlight *fl, flashlightEventFunc eventFunc)
+{
+    fl->eventFunc = eventFunc;
+}
+
+void flSetViewHeight(Flashlight *fl, int viewHeight)
+{
+    fl->viewHeight = viewHeight;
+    flThink(fl);
 }

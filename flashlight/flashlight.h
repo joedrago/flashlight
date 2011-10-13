@@ -95,6 +95,17 @@ typedef struct Bind
 
 // --------------------------------------------------------------------------------------
 
+typedef enum FlashlightEvent
+{
+    FE_ACTION = 0,
+
+    FE_COUNT
+} FlashlightEvent;
+
+typedef void (*flashlightEventFunc)(struct Flashlight *fl, FlashlightEvent e);
+
+// --------------------------------------------------------------------------------------
+
 #define SEARCH_MAXLEN 1023
 
 typedef struct Flashlight
@@ -117,11 +128,15 @@ typedef struct Flashlight
     int searchLen;
 
     cJSON *jsonData;
+
+    flashlightEventFunc eventFunc;
 } Flashlight;
 
 cJSON *flLoadJSON(const char *filename);
 
-Flashlight *flCreate(const char *configFilename, int viewHeight);
+Flashlight *flCreate(const char *configFilename);
+void flSetEventFunc(Flashlight *fl, flashlightEventFunc eventFunc);
+void flSetViewHeight(Flashlight *fl, int viewHeight);
 void flDestroy(Flashlight *fl);
 void flClear(Flashlight *fl);
 void flReload(Flashlight *fl);  // rereads configuration, does refresh
