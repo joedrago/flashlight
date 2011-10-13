@@ -43,6 +43,7 @@ static void flashlightShow()
 {
     ShowWindow(sWindow, SW_HIDE);
     ShowWindow(sWindow, SW_SHOW);
+    SetForegroundWindow(sWindow);
 }
 
 static void keyPressed(KeyType type, int key)

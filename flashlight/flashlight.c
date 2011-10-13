@@ -341,7 +341,7 @@ static int isValidExtension(List *list, const char *ext)
     int i;
     for(i = 0; i < list->extensions.count; i++)
     {
-        if(!strcmp(list->extensions.data[i], ext))
+        if(!stricmp(list->extensions.data[i], ext))
             return 1;
     }
     return 0;
