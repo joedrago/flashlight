@@ -25,10 +25,21 @@ typedef struct Theme
     flArray images;
     HFONT font;
 
+    int textHeight;
+
     int initialX;
     int initialY;
     int initialWidth;
     int initialHeight;
+
+    COLORREF searchBackgroundColor;
+    COLORREF searchTextColor;
+    COLORREF listTextInactiveColor;
+    COLORREF listTextActiveColor;
+
+    RECT searchPadding;
+    RECT searchMargins;
+    RECT listMargins;
 
     cJSON *jsonData;
 } Theme;

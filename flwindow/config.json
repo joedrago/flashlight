@@ -3,7 +3,7 @@
     "lists" : [
         {
             "type" : "files",
-            "path" : "C:\\Users\\joe\\Documents\\work",
+            "path" : "C:\\work\\bowser32\\nfp",
             "extensions" : "cpp;h"
         }
     ],

@@ -67,17 +67,20 @@ static void flashlightDraw()
 
     SelectObject(dc, sTheme->font);
     SetBkMode(dc, TRANSPARENT);
-    textRect.left = 10;
-    textRect.top = 10;
-    textRect.right = clientRect.right - 10;
-    textRect.bottom = textRect.top + 20;
+    textRect.left = sTheme->searchMargins.left;
+    textRect.top = sTheme->searchMargins.top;
+    textRect.right = clientRect.right - sTheme->searchMargins.right;
+    textRect.bottom = textRect.top + sTheme->textHeight;
+    SetDCBrushColor(dc, sTheme->searchBackgroundColor);
+    SelectObject(dc, GetStockObject(DC_BRUSH));
     Rectangle(dc, textRect.left, textRect.top, textRect.right, textRect.bottom);
     //if(fl->searchLen)
     {
         char searchBox[1024];
         sprintf(searchBox, "[%5d/%5d] Search: %s\n", fl->viewIndex + 1, fl->view.count, fl->search);
-        textRect.left += 2;
-        textRect.top += 2;
+        textRect.left += sTheme->searchPadding.left;
+        textRect.top += sTheme->searchPadding.top;
+        SetTextColor(dc, sTheme->searchTextColor);
         DrawText(dc, searchBox, strlen(searchBox), &textRect, DT_SINGLELINE);
     }
 
@@ -86,13 +89,13 @@ static void flashlightDraw()
         int currIndex = i + fl->viewOffset;
         ListEntry *e = fl->view.data[currIndex];
         if(currIndex == fl->viewIndex)
-            SetTextColor(dc, RGB(0, 0, 0));
+            SetTextColor(dc, sTheme->listTextActiveColor);
         else
-            SetTextColor(dc, RGB(0, 0, 96));
-        textRect.left = 10;
-        textRect.top = 40 + (i * 20);
-        textRect.right = clientRect.right - 10;
-        textRect.bottom = clientRect.bottom - 10;
+            SetTextColor(dc, sTheme->listTextInactiveColor);
+        textRect.left = sTheme->listMargins.left;
+        textRect.top = sTheme->listMargins.top + (i * sTheme->textHeight);
+        textRect.right = clientRect.right - sTheme->listMargins.right;
+        textRect.bottom = clientRect.bottom - sTheme->listMargins.bottom;
         DrawText(dc, e->path, strlen(e->path), &textRect, DT_SINGLELINE);
         //    printf(" * ");
         //printf(" %s\n", e->path);

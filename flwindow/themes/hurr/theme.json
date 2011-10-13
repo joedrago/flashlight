@@ -1,9 +1,12 @@
 {
     "font" : {
         "name" : "Courier New",
-        "size" : 18,
+        "size" : 14,
         "weight" : "bold"
     },
+
+    "textHeight" : 14,
+
     "initialX" : 680,
     "initialY" : 550,
     "initialWidth" : 1000,
@@ -13,5 +16,29 @@
             "type" : "border",
             "filename" : "border.png"
         }
-    ]
+    ],
+
+    "searchBackgroundColor" : [ 192, 192, 192 ],
+    "searchTextColor" : [ 0, 0, 0 ],
+    "listTextInactiveColor" : [ 0, 0, 96 ],
+    "listTextActiveColor" : [ 0, 0, 0 ],
+
+    "searchPadding" : {
+        "l" : 0,
+        "t" : 0,
+        "r" : 0,
+        "b" : 0
+    },
+    "searchMargins" : {
+        "l" : 10,
+        "t" : 10,
+        "r" : 10,
+        "b" : 0
+    },
+    "listMargins" : {
+        "l" : 10,
+        "t" : 25,
+        "r" : 10,
+        "b" : 10
+    }
 }

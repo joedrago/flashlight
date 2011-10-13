@@ -18,10 +18,32 @@ Theme *themeCreate(const char *name)
         int fontSize = jpathGetInt(theme->jsonData, "font.size", 12);
         int fontWeight = (!strcmp(fontWeightStr, "bold")) ? FW_BOLD : FW_NORMAL;
 
+        theme->textHeight = jpathGetInt(theme->jsonData, "textHeight", 20);
+
         theme->initialX = jpathGetInt(theme->jsonData, "initialX", 10);
         theme->initialY = jpathGetInt(theme->jsonData, "initialY", 10);
         theme->initialWidth = jpathGetInt(theme->jsonData, "initialWidth", 300);
         theme->initialHeight = jpathGetInt(theme->jsonData, "initialHeight", 100);
+
+        theme->searchPadding.left = jpathGetInt(theme->jsonData, "searchPadding.l", 0);
+        theme->searchPadding.top = jpathGetInt(theme->jsonData, "searchPadding.t", 0);
+        theme->searchPadding.right = jpathGetInt(theme->jsonData, "searchPadding.r", 0);
+        theme->searchPadding.bottom = jpathGetInt(theme->jsonData, "searchPadding.b", 0);
+
+        theme->searchMargins.left = jpathGetInt(theme->jsonData, "searchMargins.l", 0);
+        theme->searchMargins.top = jpathGetInt(theme->jsonData, "searchMargins.t", 0);
+        theme->searchMargins.right = jpathGetInt(theme->jsonData, "searchMargins.r", 0);
+        theme->searchMargins.bottom = jpathGetInt(theme->jsonData, "searchMargins.b", 0);
+
+        theme->listMargins.left = jpathGetInt(theme->jsonData, "listMargins.l", 0);
+        theme->listMargins.top = jpathGetInt(theme->jsonData, "listMargins.t", 20);
+        theme->listMargins.right = jpathGetInt(theme->jsonData, "listMargins.r", 0);
+        theme->listMargins.bottom = jpathGetInt(theme->jsonData, "listMargins.b", 0);
+
+        theme->searchBackgroundColor = parseColor(jpathGet(theme->jsonData, "searchBackgroundColor"), 255, 255, 255);
+        theme->searchTextColor = parseColor(jpathGet(theme->jsonData, "searchTextColor"), 0, 0, 0);
+        theme->listTextInactiveColor = parseColor(jpathGet(theme->jsonData, "listTextInactiveColor"), 0, 0, 0);
+        theme->listTextActiveColor = parseColor(jpathGet(theme->jsonData, "listTextActiveColor"), 0, 0, 0);
 
         if(fontFilename)
         {
