@@ -8,6 +8,8 @@ set(flashlight_srcs
     flarray.h
     flwalk.c
     flwalk.h
+    jpath.c
+    jpath.h
 )
 
 if(UNIX)

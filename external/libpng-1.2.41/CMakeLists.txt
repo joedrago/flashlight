@@ -18,7 +18,6 @@ set(LIBPNG_SRCS
     pngrtran.c
     pngrutil.c
     pngset.c
-    pngtest.c
     pngtrans.c
     pngvcrd.c
     pngwio.c

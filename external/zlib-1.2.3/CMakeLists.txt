@@ -14,7 +14,6 @@ set(ZLIB_SRCS
     inffast.c
     inflate.c
     inftrees.c
-    minigzip.c
     trees.c
     uncompr.c
     zutil.c
