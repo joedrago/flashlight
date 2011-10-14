@@ -17,13 +17,15 @@
 static Flashlight *sFlashlight = NULL;
 static HWND sWindow = INVALID_HANDLE_VALUE;
 static Theme *sTheme = NULL;
+static Image *sSelectedImage = NULL;
 
 void onFlashlightEvent(struct Flashlight *fl, FlashlightEvent e);
 
 static void flashlightStartup()
 {
-    sFlashlight = flCreate(flashlightPath("config.json", NULL, NULL));
+    sFlashlight = flCreate(flPath("config.json", NULL, NULL, NULL));
     sTheme = themeCreate(jpathGetString(sFlashlight->jsonData, "theme", "default"));
+    sSelectedImage = imageCreate(flPath("images", "selected.png", NULL, NULL));
     flSetEventFunc(sFlashlight, onFlashlightEvent);
 }
 
@@ -119,6 +121,19 @@ static void flashlightDraw()
         DrawText(dc, e->path, strlen(e->path), &textRect, DT_SINGLELINE);
         //    printf(" * ");
         //printf(" %s\n", e->path);
+    }
+
+    for(i = 0; i < fl->viewActions.count; i++)
+    {
+        Action *action = fl->viewActions.data[i];
+        if(action->image)
+        {
+            if(sSelectedImage && (i == fl->viewActionIndex))
+            {
+                imageDrawScaledRop(sSelectedImage, dc, sTheme->actionMargins.left + (i * sTheme->actionMargins.right) + (i * sTheme->actionSpacing), sTheme->actionMargins.top, sTheme->actionMargins.right, sTheme->actionMargins.bottom, SRCAND);
+            }
+            imageDrawScaledRop(action->image, dc, sTheme->actionMargins.left + (i * sTheme->actionMargins.right) + (i * sTheme->actionSpacing), sTheme->actionMargins.top, sTheme->actionMargins.right, sTheme->actionMargins.bottom, SRCAND);
+        }
     }
 
     EndPaint(sWindow, &ps);

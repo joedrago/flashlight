@@ -1,6 +1,7 @@
 #include "flashlight.h"
 #include "flwalk.h"
 #include "flexec.h"
+#include "jpath.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -48,6 +49,8 @@ static struct CommandNameTable
     {"clear", COMMAND_CLEAR },
     {"viewNext", COMMAND_VIEW_NEXT },
     {"viewPrev", COMMAND_VIEW_PREV },
+    {"actionNext", COMMAND_ACTION_NEXT },
+    {"actionPrev", COMMAND_ACTION_PREV },
     {0, 0}
 };
 
@@ -155,13 +158,21 @@ void listEntryDestroy(ListEntry *e)
 static void listDestroy(List *l)
 {
     flArrayClear(&l->entries, (flDestroyCB)listEntryDestroy);
-    flArrayClear(&l->extensions, free);
+    flArrayClear(&l->extensions, NULL);
     free(l);
 }
 
 static void ruleDestroy(Rule *r)
 {
+    flArrayClear(&r->extensions, NULL);
     free(r);
+}
+
+static void actionDestroy(Action *a)
+{
+    if(a->image)
+        imageDestroy(a->image);
+    free(a);
 }
 
 void flClear(Flashlight *fl)
@@ -169,6 +180,7 @@ void flClear(Flashlight *fl)
     flArrayClear(&fl->view, NULL);
     flArrayClear(&fl->lists, (flDestroyCB)listDestroy);
     flArrayClear(&fl->rules, (flDestroyCB)ruleDestroy);
+    flArrayClear(&fl->actions, (flDestroyCB)actionDestroy);
     if(fl->jsonData)
     {
         cJSON_Delete((cJSON *)fl->jsonData);
@@ -234,6 +246,80 @@ static Action *findAction(flArray *actions, const char *name)
     return NULL;
 }
 
+static void jsonAppendStringArray(cJSON *json, flArray *arr)
+{
+    if(json && (json->type == cJSON_Array))
+    {
+        int i;
+        int count = cJSON_GetArraySize(json);
+        for(i = 0; i < count; i++)
+        {
+            cJSON *jsonStr = cJSON_GetArrayItem(json, i);
+            if(jsonStr && (jsonStr->type == cJSON_String))
+            {
+                flArrayPush(arr, jsonStr->valuestring);
+            }
+        }
+    }
+}
+
+const char *flPath(const char *n1, const char *n2, const char *n3, const char *n4)
+{
+    static char sBasePath[MAX_PATH] = {0};
+    static char ret[MAX_PATH];
+#ifdef _DEBUG
+    sBasePath[0] = '.';
+#endif
+    if(sBasePath[0] == 0)
+    {
+        char *p;
+        GetModuleFileName(GetModuleHandle(NULL), sBasePath, MAX_PATH);
+        p = strrchr(sBasePath, '\\');
+        if(p) *p = 0;
+    }
+    strcpy(ret, sBasePath);
+    if(n1)
+    {
+        strcat(ret, "\\");
+        strcat(ret, n1);
+    }
+    if(n2)
+    {
+        strcat(ret, "\\");
+        strcat(ret, n2);
+    }
+    if(n3)
+    {
+        strcat(ret, "\\");
+        strcat(ret, n3);
+    }
+    if(n4)
+    {
+        strcat(ret, "\\");
+        strcat(ret, n4);
+    }
+    return ret;
+}
+
+static Image *loadActionImage(const char *theme, const char *baseName)
+{
+    Image *image = NULL;
+    char fullpath[1024];
+    if(theme)
+    {
+        strcpy(fullpath, flPath("themes", theme, "images", baseName));
+        strcat(fullpath, ".png");
+        image = imageCreate(fullpath);
+    }
+    if(!image)
+    {
+        strcpy(fullpath, flPath("images", baseName, NULL, NULL));
+        strcat(fullpath, ".png");
+        image = imageCreate(fullpath);
+    }
+    return image;
+}
+
 static void flBuild(Flashlight *fl)
 {
     cJSON *json = (cJSON *)fl->jsonData;
@@ -251,7 +337,7 @@ static void flBuild(Flashlight *fl)
             List *list = calloc(1, sizeof(*list));
             list->type = LT_FILES;
             list->path = getString(listData, "path");
-            flParseExtensions(list, getString(listData, "extensions"));
+            jsonAppendStringArray(jpathGet(listData, "extensions"), &list->extensions);
             flArrayPush(&fl->lists, list);
         }
     }
@@ -298,6 +384,7 @@ static void flBuild(Flashlight *fl)
             cJSON *actionData = cJSON_GetArrayItem(actions, i);
             Action *action = calloc(1, sizeof(*action));
             action->name = getString(actionData, "name");
+            action->image = loadActionImage(getString(json, "theme"), getString(actionData, "image"));
             action->exec = getString(actionData, "exec");
             flArrayPush(&fl->actions, action);
         }
@@ -310,9 +397,9 @@ static void flBuild(Flashlight *fl)
         {
             cJSON *ruleData = cJSON_GetArrayItem(rules, i);
             Rule *rule = calloc(1, sizeof(*rule));
-            rule->extension = getString(ruleData, "extension");
+            jsonAppendStringArray(jpathGet(ruleData, "extensions"), &rule->extensions);
             rule->action = findAction(&fl->actions, getString(ruleData, "action"));
-            if(rule->action && rule->extension)
+            if(rule->action)
             {
                 flArrayPush(&fl->rules, rule);
             }
@@ -336,12 +423,12 @@ void flReload(Flashlight *fl)
     flRefresh(fl);
 }
 
-static int isValidExtension(List *list, const char *ext)
+static int stringExistsInArrayInsensitive(flArray *arr, const char *str)
 {
     int i;
-    for(i = 0; i < list->extensions.count; i++)
+    for(i = 0; i < arr->count; i++)
     {
-        if(!stricmp(list->extensions.data[i], ext))
+        if(!stricmp(arr->data[i], str))
             return 1;
     }
     return 0;
@@ -358,7 +445,7 @@ void flRefreshFiles(List *l)
     flClearFiles(l);
     while(walkNext(walk))
     {
-        if(isValidExtension(l, walk->currentExtension))
+        if((!l->extensions.count) || stringExistsInArrayInsensitive(&l->extensions, walk->currentExtension))
         {
             ListEntry *entry = calloc(1, sizeof(*entry));
             entry->path = strdup(walk->currentPath);
@@ -405,7 +492,10 @@ static void flMatchActions(Flashlight *fl)
         for(i = 0; i < fl->rules.count; i++)
         {
             Rule *rule = fl->rules.data[i];
-            if(extensionMatches(selectedPath, rule->extension))
+            const char *ext = strrchr(selectedPath, '.');
+            if(ext)
+                ext++;
+            if((!rule->extensions.count) || (ext && stringExistsInArrayInsensitive(&rule->extensions, ext)))
             {
                 flArrayPush(&fl->viewActions, rule->action);
             }
@@ -532,6 +622,17 @@ static void flSetViewIndex(Flashlight *fl, int newIndex)
     flMatchActions(fl);
 }
 
+static void flSetViewActionIndex(Flashlight *fl, int newIndex)
+{
+    if(!fl->viewActions.count)
+        return;
+
+    if(newIndex < 0)
+        newIndex = 0;
+    if(newIndex >= fl->viewActions.count)
+        newIndex = fl->viewActions.count - 1;
+    fl->viewActionIndex = newIndex;
+}
 
 void flAction(Flashlight *fl)
 {
@@ -583,10 +684,12 @@ void flCommand(Flashlight *fl, Command command)
     }
     case COMMAND_ACTION_PREV:
     {
+        flSetViewActionIndex(fl, fl->viewActionIndex - 1);
         break;
     }
     case COMMAND_ACTION_NEXT:
     {
+        flSetViewActionIndex(fl, fl->viewActionIndex + 1);
         break;
     }
     }

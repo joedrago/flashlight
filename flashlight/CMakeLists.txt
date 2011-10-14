@@ -8,6 +8,8 @@ set(flashlight_srcs
     flarray.h
     flwalk.c
     flwalk.h
+    image.c
+    image.h
     jpath.c
     jpath.h
 )
@@ -23,6 +25,12 @@ else()
     )
 endif()
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${cjson_SOURCE_DIR})
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${cjson_SOURCE_DIR}
+    ${zlib_SOURCE_DIR}
+    ${libpng_SOURCE_DIR}
+)
 add_library(flashlight ${flashlight_srcs})
+target_link_libraries(flashlight cjson libpng zlib)
 

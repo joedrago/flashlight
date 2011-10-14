@@ -16,7 +16,7 @@ Image *imageCreate(const char *filename);
 void imageDestroy(Image *image);
 
 void imageDraw(Image *image, HDC dc, int x, int y);
-
+void imageDrawScaledRop(Image *image, HDC dc, int x, int y, int w, int h, int rop);
 void imageDrawBackground(Image *image, HDC dc, int w, int h);
 
 #endif

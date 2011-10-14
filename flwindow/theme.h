@@ -40,6 +40,9 @@ typedef struct Theme
     RECT searchPadding;
     RECT searchMargins;
     RECT listMargins;
+    RECT actionMargins;
+
+    int actionSpacing;
 
     cJSON *jsonData;
 } Theme;

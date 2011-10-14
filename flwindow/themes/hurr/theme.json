@@ -37,8 +37,15 @@
     },
     "listMargins" : {
         "l" : 10,
-        "t" : 25,
+        "t" : 70,
         "r" : 10,
         "b" : 10
-    }
+    },
+    "actionMargins" : {
+        "l" : 10,
+        "t" : 30,
+        "r" : 32,
+        "b" : 32
+    },
+    "actionSpacing" : 5
 }

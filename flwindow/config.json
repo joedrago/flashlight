@@ -3,25 +3,29 @@
     "lists" : [
         {
             "type" : "files",
-            "path" : "C:\\work\\bowser32\\nfp",
-            "extensions" : "cpp;h"
+            "path" : "C:\\Users\\joe\\Documents\\work"
         }
     ],
     "actions" : [
         {
             "name" : "Open",
-            "icon" : "open.ico",
+            "image" : "open",
+            "exec" : "!*!"
+        },
+        {
+            "name" : "Close",
+            "image" : "trollface",
             "exec" : "notepad !*!"
         }
     ],
     "rules" : [
         {
-            "extension" : "cpp",
+            "extensions" : ["cpp","h"],
             "action" : "Open"
         },
         {
-            "extension" : "h",
-            "action" : "Open"
+            "extensions" : ["cpp","h"],
+            "action" : "Close"
         }
     ],
     "binds" : [
@@ -32,6 +36,14 @@
         {
             "key" : "up",
             "command" : "viewPrev"
+        },
+        {
+            "key" : "left",
+            "command" : "actionPrev"
+        },
+        {
+            "key" : "right",
+            "command" : "actionNext"
         },
         {
             "key" : "l",

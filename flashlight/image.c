@@ -119,6 +119,19 @@ void imageDraw(Image *image, HDC dc, int x, int y)
                   SRCCOPY);
 }
 
+void imageDrawScaledRop(Image *image, HDC dc, int x, int y, int w, int h, int rop)
+{
+    StretchDIBits(dc,
+                  x, y,
+                  w, h,
+                  0, 0,
+                  image->width, image->height,
+                  image->bits,
+                  &image->bitmapInfo,
+                  DIB_RGB_COLORS,
+                  rop);
+}
+
 void imageDrawBackground(Image *image, HDC dc, int w, int h)
 {
     int sw = image->width;

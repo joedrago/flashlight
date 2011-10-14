@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "flarray.h"
+#include "image.h"
 #include "cJSON.h"
 
 // --------------------------------------------------------------------------------------
@@ -73,13 +74,14 @@ typedef struct Action
 {
     const char *name;
     const char *exec;
+    Image *image;
 } Action;
 
 // --------------------------------------------------------------------------------------
 
 typedef struct Rule
 {
-    const char *extension;
+    flArray extensions;
     Action *action;
 } Rule;
 
@@ -144,5 +146,6 @@ void flRefresh(Flashlight *fl); // refreshes list caches
 void flAction(Flashlight *fl);  // Performs currently selected action on currently selected text
 void flKey(Flashlight *fl, KeyType type, int key);
 void flCommand(Flashlight *fl, Command command);
+const char *flPath(const char *n1, const char *n2, const char *n3, const char *n4);
 
 #endif

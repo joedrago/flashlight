@@ -7,7 +7,7 @@ Theme *themeCreate(const char *name)
 {
     cJSON *imageArray;
     Theme *theme = calloc(1, sizeof(*theme));
-    const char *themeJsonFilename = flashlightPath("themes", name, "theme.json");
+    const char *themeJsonFilename = flPath("themes", name, "theme.json", NULL);
 
     theme->jsonData = flLoadJSON(themeJsonFilename);
     if(theme->jsonData)
@@ -36,9 +36,16 @@ Theme *themeCreate(const char *name)
         theme->searchMargins.bottom = jpathGetInt(theme->jsonData, "searchMargins.b", 0);
 
         theme->listMargins.left = jpathGetInt(theme->jsonData, "listMargins.l", 0);
-        theme->listMargins.top = jpathGetInt(theme->jsonData, "listMargins.t", 20);
+        theme->listMargins.top = jpathGetInt(theme->jsonData, "listMargins.t", 40);
         theme->listMargins.right = jpathGetInt(theme->jsonData, "listMargins.r", 0);
         theme->listMargins.bottom = jpathGetInt(theme->jsonData, "listMargins.b", 0);
+
+        theme->actionMargins.left = jpathGetInt(theme->jsonData, "actionMargins.l", 0);
+        theme->actionMargins.top = jpathGetInt(theme->jsonData, "actionMargins.t", 20);
+        theme->actionMargins.right = jpathGetInt(theme->jsonData, "actionMargins.r", 0);
+        theme->actionMargins.bottom = jpathGetInt(theme->jsonData, "actionMargins.b", 0);
+
+        theme->actionSpacing = jpathGetInt(theme->jsonData, "actionSpacing", 5);
 
         theme->searchBackgroundColor = parseColor(jpathGet(theme->jsonData, "searchBackgroundColor"), 255, 255, 255);
         theme->searchTextColor = parseColor(jpathGet(theme->jsonData, "searchTextColor"), 0, 0, 0);
@@ -47,7 +54,7 @@ Theme *themeCreate(const char *name)
 
         if(fontFilename)
         {
-            fontFilename = flashlightPath("themes", name, fontFilename);
+            fontFilename = flPath("themes", name, fontFilename, NULL);
             AddFontResourceEx(fontFilename, FR_PRIVATE | FR_NOT_ENUM, 0);
         }
         theme->font = CreateFont(fontSize, 0, 0, 0, /*FW_DONTCARE*/ fontWeight, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
@@ -67,7 +74,7 @@ Theme *themeCreate(const char *name)
                 if(filename)
                 {
                     ThemeImage *themeImage = calloc(1, sizeof(*themeImage));
-                    themeImage->image = imageCreate(flashlightPath("themes", name, filename));
+                    themeImage->image = imageCreate(flPath("themes", name, "images", filename));
                     if(themeImage->image)
                     {
                         flArrayPush(&theme->images, themeImage);
