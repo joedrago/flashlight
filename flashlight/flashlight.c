@@ -386,6 +386,7 @@ static void flBuild(Flashlight *fl)
             action->name = getString(actionData, "name");
             action->image = loadActionImage(getString(json, "theme"), getString(actionData, "image"));
             action->exec = getString(actionData, "exec");
+            action->autoClose = jpathGetBool(actionData, "autoClose", true);
             flArrayPush(&fl->actions, action);
         }
     }
@@ -647,7 +648,7 @@ void flAction(Flashlight *fl)
         Action *action = fl->viewActions.data[fl->viewActionIndex];
         flExec(action, selectedPath);
         if(fl->eventFunc)
-            fl->eventFunc(fl, FE_ACTION);
+            fl->eventFunc(fl, FE_ACTION, action);
     }
 }
 

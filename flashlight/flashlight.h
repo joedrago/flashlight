@@ -75,6 +75,7 @@ typedef struct Action
     const char *name;
     const char *exec;
     Image *image;
+    int autoClose;
 } Action;
 
 // --------------------------------------------------------------------------------------
@@ -104,7 +105,7 @@ typedef enum FlashlightEvent
     FE_COUNT
 } FlashlightEvent;
 
-typedef void (*flashlightEventFunc)(struct Flashlight *fl, FlashlightEvent e);
+typedef void (*flashlightEventFunc)(struct Flashlight *fl, FlashlightEvent e, void *data);
 
 // --------------------------------------------------------------------------------------
 

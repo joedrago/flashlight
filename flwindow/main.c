@@ -19,7 +19,7 @@ static Flashlight *sFlashlight = NULL;
 static HWND sWindow = INVALID_HANDLE_VALUE;
 static Theme *sTheme = NULL;
 
-void onFlashlightEvent(struct Flashlight *fl, FlashlightEvent e);
+void onFlashlightEvent(struct Flashlight *fl, FlashlightEvent e, void *data);
 
 static void flashlightStartup()
 {
@@ -313,10 +313,14 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE prevInst, LPTSTR cmdline, int sho
     return ret;
 }
 
-void onFlashlightEvent(struct Flashlight *fl, FlashlightEvent e)
+void onFlashlightEvent(struct Flashlight *fl, FlashlightEvent e, void *data)
 {
+    Action *action;
     if(e != FE_ACTION)
         return;
 
-    flashlightHide();
+    action = data;
+    
+    if(action->autoClose)
+        flashlightHide();
 }

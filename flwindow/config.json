@@ -15,7 +15,8 @@
         {
             "name" : "Close",
             "image" : "p4",
-            "exec" : "notepad !*!"
+            "exec" : "notepad !*!",
+            "autoClose" : false
         }
     ],
     "rules" : [
