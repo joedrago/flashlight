@@ -33,4 +33,8 @@ include_directories(
 )
 add_library(flashlight ${flashlight_srcs})
 target_link_libraries(flashlight cjson libpng zlib)
+if(NOT UNIX)
+    target_link_libraries(flashlight msimg32.lib)
+endif()
+
 

@@ -13,11 +13,11 @@
 #define FL_WINDOW_CLASS "FlashlightWindow"
 
 #define RESIZE_MARGIN 20
+#define SELECT_PADDING 2
 
 static Flashlight *sFlashlight = NULL;
 static HWND sWindow = INVALID_HANDLE_VALUE;
 static Theme *sTheme = NULL;
-static Image *sSelectedImage = NULL;
 
 void onFlashlightEvent(struct Flashlight *fl, FlashlightEvent e);
 
@@ -25,7 +25,6 @@ static void flashlightStartup()
 {
     sFlashlight = flCreate(flPath("config.json", NULL, NULL, NULL));
     sTheme = themeCreate(jpathGetString(sFlashlight->jsonData, "theme", "default"));
-    sSelectedImage = imageCreate(flPath("images", "selected.png", NULL, NULL));
     flSetEventFunc(sFlashlight, onFlashlightEvent);
 }
 
@@ -128,11 +127,21 @@ static void flashlightDraw()
         Action *action = fl->viewActions.data[i];
         if(action->image)
         {
-            if(sSelectedImage && (i == fl->viewActionIndex))
+            if(i == fl->viewActionIndex)
             {
-                imageDrawScaledRop(sSelectedImage, dc, sTheme->actionMargins.left + (i * sTheme->actionMargins.right) + (i * sTheme->actionSpacing), sTheme->actionMargins.top, sTheme->actionMargins.right, sTheme->actionMargins.bottom, SRCAND);
+                RECT r;
+                r.left = sTheme->actionMargins.left + (i * sTheme->actionMargins.right) + (i * sTheme->actionSpacing);
+                r.top = sTheme->actionMargins.top;
+                r.right = r.left + sTheme->actionMargins.right;
+                r.bottom = r.top + sTheme->actionMargins.bottom;
+                r.left -= SELECT_PADDING;
+                r.top -= SELECT_PADDING;
+                r.right += SELECT_PADDING;
+                r.bottom += SELECT_PADDING;
+                SetDCBrushColor(dc, sTheme->selectBackgroundColor);
+                Rectangle(dc, r.left, r.top, r.right, r.bottom);
             }
-            imageDrawScaledRop(action->image, dc, sTheme->actionMargins.left + (i * sTheme->actionMargins.right) + (i * sTheme->actionSpacing), sTheme->actionMargins.top, sTheme->actionMargins.right, sTheme->actionMargins.bottom, SRCAND);
+            imageDrawTrans(action->image, dc, sTheme->actionMargins.left + (i * sTheme->actionMargins.right) + (i * sTheme->actionSpacing), sTheme->actionMargins.top, sTheme->actionMargins.right, sTheme->actionMargins.bottom, RGB(255, 255, 255));
         }
     }
 

@@ -32,6 +32,7 @@ typedef struct Theme
     int initialWidth;
     int initialHeight;
 
+    COLORREF selectBackgroundColor;
     COLORREF searchBackgroundColor;
     COLORREF searchTextColor;
     COLORREF listTextInactiveColor;

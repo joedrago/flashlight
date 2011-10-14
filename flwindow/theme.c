@@ -47,6 +47,7 @@ Theme *themeCreate(const char *name)
 
         theme->actionSpacing = jpathGetInt(theme->jsonData, "actionSpacing", 5);
 
+        theme->selectBackgroundColor = parseColor(jpathGet(theme->jsonData, "selectBackgroundColor"), 255, 255, 255);
         theme->searchBackgroundColor = parseColor(jpathGet(theme->jsonData, "searchBackgroundColor"), 255, 255, 255);
         theme->searchTextColor = parseColor(jpathGet(theme->jsonData, "searchTextColor"), 0, 0, 0);
         theme->listTextInactiveColor = parseColor(jpathGet(theme->jsonData, "listTextInactiveColor"), 0, 0, 0);

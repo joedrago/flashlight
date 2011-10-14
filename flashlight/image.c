@@ -132,6 +132,32 @@ void imageDrawScaledRop(Image *image, HDC dc, int x, int y, int w, int h, int ro
                   rop);
 }
 
+void imageDrawTrans(Image *image, HDC dc, int x, int y, int w, int h, COLORREF trans)
+{
+    HDC srcDC = CreateCompatibleDC(dc);
+    HBITMAP bmp = CreateCompatibleBitmap(dc, w, h);
+    SelectObject(srcDC, bmp);
+    //SetBkColor(srcDC,RGB(255,255,255));
+    StretchDIBits(srcDC,
+                  0, 0,
+                  w, h,
+                  0, 0,
+                  image->width, image->height,
+                  image->bits,
+                  &image->bitmapInfo,
+                  DIB_RGB_COLORS,
+                  SRCCOPY);
+    TransparentBlt(dc,
+                   x, y,
+                   w, h,
+                   srcDC,
+                   0, 0,
+                   w, h,
+                   trans);
+    DeleteObject(bmp);
+    DeleteDC(srcDC);
+}
+
 void imageDrawBackground(Image *image, HDC dc, int w, int h)
 {
     int sw = image->width;

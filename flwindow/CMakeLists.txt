@@ -17,8 +17,7 @@ include_directories(
     ${flashlight_SOURCE_DIR}
 )
 add_executable(flwindow WIN32 ${flwindow_srcs})
-target_link_libraries(flwindow flashlight cjson libpng zlib pcre)
+target_link_libraries(flwindow flashlight cjson libpng zlib)
 if(UNIX)
     target_link_libraries(flwindow m)
 endif()
-

@@ -18,6 +18,7 @@
         }
     ],
 
+    "selectBackgroundColor" : [ 128, 128, 192 ],
     "searchBackgroundColor" : [ 192, 192, 192 ],
     "searchTextColor" : [ 0, 0, 0 ],
     "listTextInactiveColor" : [ 0, 0, 96 ],

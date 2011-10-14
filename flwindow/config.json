@@ -14,7 +14,7 @@
         },
         {
             "name" : "Close",
-            "image" : "trollface",
+            "image" : "p4",
             "exec" : "notepad !*!"
         }
     ],
