@@ -7,7 +7,7 @@
 static char sExecBuffer[EXECBUFSIZE];
 static char sVarBuffer[128];
 
-int flExec(Action *action, const char *path)
+int flExec(Flashlight *fl, Action *action, const char *path, flConsoleOutputFunc consoleOutputFunc, void *userData)
 {
     char *p = sExecBuffer;
     char *front = NULL;
@@ -46,6 +46,7 @@ int flExec(Action *action, const char *path)
         }
     }
 
+    consoleOutputFunc(fl, userData, sExecBuffer);
     system(sExecBuffer);
     return 1;
 }

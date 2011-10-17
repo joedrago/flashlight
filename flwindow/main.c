@@ -53,12 +53,15 @@ static void keyPressed(KeyType type, int key)
     InvalidateRect(sWindow, NULL, TRUE);
 }
 
-static void getListRect(RECT *outputRect, RECT *clientRect, int i)
+static void getListRect(RECT *outputRect, RECT *marginsRect, RECT *clientRect, int i)
 {
-    outputRect->left = sTheme->listMargins.left;
-    outputRect->top = sTheme->listMargins.top + (i * sTheme->textHeight);
-    outputRect->right = clientRect->right - sTheme->listMargins.right;
-    outputRect->bottom = clientRect->bottom - sTheme->listMargins.bottom;
+    outputRect->left = marginsRect->left;
+    if(marginsRect->top < 0)
+        outputRect->top = (clientRect->bottom + marginsRect->top) + (i * sTheme->textHeight);
+    else
+        outputRect->top = marginsRect->top + (i * sTheme->textHeight);
+    outputRect->right = clientRect->right - marginsRect->right;
+    outputRect->bottom = clientRect->bottom - marginsRect->bottom;
 }
 
 static void flashlightDraw()
@@ -85,10 +88,6 @@ static void flashlightDraw()
         }
     }
 
-    show = fl->view.count;
-    if(show > fl->viewHeight)
-        show = fl->viewHeight;
-
     SelectObject(dc, sTheme->font);
     SetBkMode(dc, TRANSPARENT);
     textRect.left = sTheme->searchMargins.left;
@@ -108,6 +107,9 @@ static void flashlightDraw()
         DrawText(dc, searchBox, strlen(searchBox), &textRect, DT_SINGLELINE);
     }
 
+    show = fl->view.count;
+    if(show > fl->viewHeight)
+        show = fl->viewHeight;
     for(i = 0; i < show; i++)
     {
         int currIndex = i + fl->viewOffset;
@@ -116,8 +118,22 @@ static void flashlightDraw()
             SetTextColor(dc, sTheme->listTextActiveColor);
         else
             SetTextColor(dc, sTheme->listTextInactiveColor);
-        getListRect(&textRect, &clientRect, i);
+        getListRect(&textRect, &sTheme->listMargins, &clientRect, i);
         DrawText(dc, e->path, strlen(e->path), &textRect, DT_SINGLELINE);
+        //    printf(" * ");
+        //printf(" %s\n", e->path);
+    }
+
+    show = fl->scrollback.count;
+    if(show > fl->scrollbackHeight)
+        show = fl->scrollbackHeight;
+    for(i = 0; i < show; i++)
+    {
+        int currIndex = i;// + fl->viewOffset;
+        const char *t = fl->scrollback.data[(show - 1) - currIndex];
+        SetTextColor(dc, sTheme->scrollbackColor);
+        getListRect(&textRect, &sTheme->scrollbackMargins, &clientRect, i);
+        DrawText(dc, t, strlen(t), &textRect, DT_SINGLELINE);
         //    printf(" * ");
         //printf(" %s\n", e->path);
     }
@@ -158,11 +174,20 @@ void flashlightResize()
     if(sTheme->textHeight == 0)
         return;
     GetClientRect(sWindow, &clientRect);
-    getListRect(&listRect, &clientRect, 0);
+
+    // Recalc List Height
+    getListRect(&listRect, &sTheme->listMargins, &clientRect, 0);
     height = ((listRect.bottom - listRect.top) / sTheme->textHeight);
     if(height < 1)
         height = 1;
     flSetViewHeight(sFlashlight, height);
+
+    // Recalc Output Height
+    getListRect(&listRect, &sTheme->scrollbackMargins, &clientRect, 0);
+    height = ((listRect.bottom - listRect.top) / sTheme->textHeight);
+    if(height < 1)
+        height = 1;
+    flSetScrollbackHeight(sFlashlight, height);
 }
 
 static LRESULT CALLBACK wndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
@@ -315,12 +340,14 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE prevInst, LPTSTR cmdline, int sho
 
 void onFlashlightEvent(struct Flashlight *fl, FlashlightEvent e, void *data)
 {
-    Action *action;
-    if(e != FE_ACTION)
-        return;
-
-    action = data;
-    
-    if(action->autoClose)
-        flashlightHide();
+    if(e == FE_CONSOLE)
+    {
+        InvalidateRect(sWindow, NULL, TRUE);
+    }
+    else if(e == FE_ACTION)
+    {
+        Action *action = data;
+        if(action->autoClose)
+            flashlightHide();
+    }
 }

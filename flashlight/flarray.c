@@ -1,6 +1,7 @@
 #include "flarray.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 void flArraySquash(flArray *p)
 {
@@ -55,6 +56,17 @@ int flArrayPush(flArray *p, void *v)
         p->data = realloc(p->data, p->capacity * sizeof(char **));
     }
     p->data[p->count++] = v;
+    return (p->count - 1);
+}
+
+int flArrayUnshift(flArray *p, void *v)
+{
+    int last = flArrayPush(p, v);
+    if(p->count > 1)
+    {
+        memmove(&p->data[1], &p->data[0], sizeof(void *) * (p->count - 1));
+    }
+    p->data[0] = v;
     return (p->count - 1);
 }
 

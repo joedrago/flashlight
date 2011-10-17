@@ -40,6 +40,11 @@ Theme *themeCreate(const char *name)
         theme->listMargins.right = jpathGetInt(theme->jsonData, "listMargins.r", 0);
         theme->listMargins.bottom = jpathGetInt(theme->jsonData, "listMargins.b", 0);
 
+        theme->scrollbackMargins.left = jpathGetInt(theme->jsonData, "scrollbackMargins.l", 0);
+        theme->scrollbackMargins.top = jpathGetInt(theme->jsonData, "scrollbackMargins.t", 40);
+        theme->scrollbackMargins.right = jpathGetInt(theme->jsonData, "scrollbackMargins.r", 0);
+        theme->scrollbackMargins.bottom = jpathGetInt(theme->jsonData, "scrollbackMargins.b", 0);
+
         theme->actionMargins.left = jpathGetInt(theme->jsonData, "actionMargins.l", 0);
         theme->actionMargins.top = jpathGetInt(theme->jsonData, "actionMargins.t", 20);
         theme->actionMargins.right = jpathGetInt(theme->jsonData, "actionMargins.r", 0);
@@ -47,6 +52,7 @@ Theme *themeCreate(const char *name)
 
         theme->actionSpacing = jpathGetInt(theme->jsonData, "actionSpacing", 5);
 
+        theme->scrollbackColor = parseColor(jpathGet(theme->jsonData, "scrollbackColor"), 255, 255, 255);
         theme->selectBackgroundColor = parseColor(jpathGet(theme->jsonData, "selectBackgroundColor"), 255, 255, 255);
         theme->searchBackgroundColor = parseColor(jpathGet(theme->jsonData, "searchBackgroundColor"), 255, 255, 255);
         theme->searchTextColor = parseColor(jpathGet(theme->jsonData, "searchTextColor"), 0, 0, 0);

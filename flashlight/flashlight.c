@@ -138,13 +138,17 @@ Flashlight *flCreate(const char *configFilename)
     Flashlight *fl = calloc(1, sizeof(*fl));
     fl->configFilename = strdup(configFilename);
     fl->viewHeight = 1;
+    fl->scrollbackHeight = 1;
+    fl->scrollbackLimit = 10;
     flReload(fl);
+    flOutput(fl, "Flashlight v0.1");
     return fl;
 }
 
 void flDestroy(Flashlight *fl)
 {
     flClear(fl);
+    flArrayClear(&fl->scrollback, (flDestroyCB)free);
     free(fl->configFilename);
     free(fl);
 }
@@ -635,6 +639,13 @@ static void flSetViewActionIndex(Flashlight *fl, int newIndex)
     fl->viewActionIndex = newIndex;
 }
 
+static void flOnConsoleOutput(Flashlight *fl, void *userData, const char *text)
+{
+    flOutput(fl, text);
+    if(fl->eventFunc)
+        fl->eventFunc(fl, FE_CONSOLE, (void *)text);
+}
+
 void flAction(Flashlight *fl)
 {
     if((fl->view.count == 0) || (fl->viewActions.count == 0))
@@ -646,7 +657,7 @@ void flAction(Flashlight *fl)
         ListEntry *listEntry = fl->view.data[fl->viewIndex];
         const char *selectedPath = listEntry->path;
         Action *action = fl->viewActions.data[fl->viewActionIndex];
-        flExec(action, selectedPath);
+        flExec(fl, action, selectedPath, flOnConsoleOutput, fl);
         if(fl->eventFunc)
             fl->eventFunc(fl, FE_ACTION, action);
     }
@@ -705,4 +716,19 @@ void flSetViewHeight(Flashlight *fl, int viewHeight)
 {
     fl->viewHeight = viewHeight;
     flThink(fl);
+}
+
+void flSetScrollbackHeight(Flashlight *fl, int height)
+{
+    fl->scrollbackHeight = height;
+}
+
+void flOutput(Flashlight *fl, const char *text)
+{
+    while(fl->scrollback.count > fl->scrollbackLimit)
+    {
+        char *t = flArrayPop(&fl->scrollback);
+        free(t);
+    }
+    flArrayUnshift(&fl->scrollback, strdup(text));
 }

@@ -32,6 +32,7 @@ typedef struct Theme
     int initialWidth;
     int initialHeight;
 
+    COLORREF scrollbackColor;
     COLORREF selectBackgroundColor;
     COLORREF searchBackgroundColor;
     COLORREF searchTextColor;
@@ -41,6 +42,7 @@ typedef struct Theme
     RECT searchPadding;
     RECT searchMargins;
     RECT listMargins;
+    RECT scrollbackMargins;
     RECT actionMargins;
 
     int actionSpacing;

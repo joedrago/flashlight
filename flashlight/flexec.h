@@ -3,6 +3,8 @@
 
 #include "flashlight.h"
 
-int flExec(Action *action, const char *path);
+typedef void (*flConsoleOutputFunc)(Flashlight *fl, void *userData, const char *text);
+
+int flExec(Flashlight *fl, Action *action, const char *path, flConsoleOutputFunc consoleOutputFunc, void *userData);
 
 #endif

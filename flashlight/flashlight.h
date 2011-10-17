@@ -101,6 +101,7 @@ typedef struct Bind
 typedef enum FlashlightEvent
 {
     FE_ACTION = 0,
+    FE_CONSOLE,
 
     FE_COUNT
 } FlashlightEvent;
@@ -118,6 +119,10 @@ typedef struct Flashlight
     flArray binds;
     flArray rules;
     flArray actions;
+
+    flArray scrollback;
+    int scrollbackLimit;
+    int scrollbackHeight;
 
     flArray view; // ListEntry*
     int viewHeight;
@@ -140,6 +145,7 @@ cJSON *flLoadJSON(const char *filename);
 Flashlight *flCreate(const char *configFilename);
 void flSetEventFunc(Flashlight *fl, flashlightEventFunc eventFunc);
 void flSetViewHeight(Flashlight *fl, int viewHeight);
+void flSetScrollbackHeight(Flashlight *fl, int height);
 void flDestroy(Flashlight *fl);
 void flClear(Flashlight *fl);
 void flReload(Flashlight *fl);  // rereads configuration, does refresh
@@ -147,6 +153,7 @@ void flRefresh(Flashlight *fl); // refreshes list caches
 void flAction(Flashlight *fl);  // Performs currently selected action on currently selected text
 void flKey(Flashlight *fl, KeyType type, int key);
 void flCommand(Flashlight *fl, Command command);
+void flOutput(Flashlight *fl, const char *text);
 const char *flPath(const char *n1, const char *n2, const char *n3, const char *n4);
 
 #endif
