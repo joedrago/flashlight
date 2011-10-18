@@ -42,6 +42,7 @@ static void flashlightHide()
 
 static void flashlightShow()
 {
+    flClearSearch(sFlashlight);
     ShowWindow(sWindow, SW_HIDE);
     ShowWindow(sWindow, SW_SHOW);
     SetForegroundWindow(sWindow);
@@ -204,18 +205,22 @@ static LRESULT CALLBACK wndProc(HWND window, UINT message, WPARAM wparam, LPARAM
     case WM_KEYDOWN:
         switch(wparam)
         {
-        case VK_UP:
-            keyPressed(KT_SPECIAL, SK_UP);
-            break;
-        case VK_DOWN:
-            keyPressed(KT_SPECIAL, SK_DOWN);
-            break;
-        case VK_LEFT:
-            keyPressed(KT_SPECIAL, SK_LEFT);
-            break;
-        case VK_RIGHT:
-            keyPressed(KT_SPECIAL, SK_RIGHT);
-            break;
+        case VK_UP:    keyPressed(KT_SPECIAL, SK_UP);    break;
+        case VK_DOWN:  keyPressed(KT_SPECIAL, SK_DOWN);  break;
+        case VK_LEFT:  keyPressed(KT_SPECIAL, SK_LEFT);  break;
+        case VK_RIGHT: keyPressed(KT_SPECIAL, SK_RIGHT); break;
+        case VK_F1:    keyPressed(KT_SPECIAL, SK_F1);    break;
+        case VK_F2:    keyPressed(KT_SPECIAL, SK_F2);    break;
+        case VK_F3:    keyPressed(KT_SPECIAL, SK_F3);    break;
+        case VK_F4:    keyPressed(KT_SPECIAL, SK_F4);    break;
+        case VK_F5:    keyPressed(KT_SPECIAL, SK_F5);    break;
+        case VK_F6:    keyPressed(KT_SPECIAL, SK_F6);    break;
+        case VK_F7:    keyPressed(KT_SPECIAL, SK_F7);    break;
+        case VK_F8:    keyPressed(KT_SPECIAL, SK_F8);    break;
+        case VK_F9:    keyPressed(KT_SPECIAL, SK_F9);    break;
+        case VK_F10:   keyPressed(KT_SPECIAL, SK_F10);   break;
+        case VK_F11:   keyPressed(KT_SPECIAL, SK_F11);   break;
+        case VK_F12:   keyPressed(KT_SPECIAL, SK_F12);   break;
         };
         break;
     case WM_HOTKEY:

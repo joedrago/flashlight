@@ -25,6 +25,18 @@ static struct SpecialKeyTable
     {"down", SK_DOWN },
     {"left", SK_LEFT },
     {"right", SK_RIGHT },
+    {"f1", SK_F1 },
+    {"f2", SK_F2 },
+    {"f3", SK_F3 },
+    {"f4", SK_F4 },
+    {"f5", SK_F5 },
+    {"f6", SK_F6 },
+    {"f7", SK_F7 },
+    {"f8", SK_F8 },
+    {"f9", SK_F9 },
+    {"f10", SK_F10 },
+    {"f11", SK_F11 },
+    {"f12", SK_F12 },
     {0, 0}
 };
 
@@ -47,6 +59,8 @@ static struct CommandNameTable
 } sCommandNameTable[] =
 {
     {"clear", COMMAND_CLEAR },
+    {"undoClear", COMMAND_UNDO_CLEAR },
+    {"reload", COMMAND_RELOAD },
     {"viewNext", COMMAND_VIEW_NEXT },
     {"viewPrev", COMMAND_VIEW_PREV },
     {"actionNext", COMMAND_ACTION_NEXT },
@@ -54,16 +68,29 @@ static struct CommandNameTable
     {0, 0}
 };
 
-static int nameToCommand(const char *name)
+static CommandInfo nameToCommand(const char *name)
 {
+    CommandInfo info = { COMMAND_NONE, NULL };
     struct CommandNameTable *p = sCommandNameTable;
     while(p->name)
     {
         if(!strcmp(p->name, name))
-            return p->command;
+        {
+            info.extraData = NULL;
+            info.command = p->command;
+            break;
+        }
         p++;
     }
-    return COMMAND_NONE;
+    if(info.command == COMMAND_NONE)
+    {
+        if(strstr(name, "action ") == name)
+        {
+            info.command = COMMAND_NAMED_ACTION;
+            info.extraData = (void*)(name + 7);
+        }
+    }
+    return info;
 }
 
 static const char *flstristr(const char *haystack, const char *needle)
@@ -353,7 +380,7 @@ static void flBuild(Flashlight *fl)
         {
             cJSON *bindData = cJSON_GetArrayItem(binds, i);
             Bind *bind = calloc(1, sizeof(*bind));
-            Command command = nameToCommand(getString(bindData, "command"));
+            CommandInfo commandInfo = nameToCommand(getString(bindData, "command"));
             const char *keyStr = getString(bindData, "key");
             int keyLen = strlen(keyStr);
             if(keyLen > 1)
@@ -367,14 +394,14 @@ static void flBuild(Flashlight *fl)
                 bind->keyType = KT_CONTROL;
                 bind->key = keyStr[0] - 96; // converts 'a' -> 1
             }
-            if((bind->key == 0) || (bind->keyType == KT_UNKNOWN) || (command == COMMAND_NONE))
+            if((bind->key == 0) || (bind->keyType == KT_UNKNOWN) || (commandInfo.command == COMMAND_NONE))
             {
                 free(bind);
             }
             else
             {
                 bind->action = getString(bindData, "action");
-                bind->command = command;
+                bind->commandInfo = commandInfo;
                 flArrayPush(&fl->binds, bind);
             }
         }
@@ -391,6 +418,7 @@ static void flBuild(Flashlight *fl)
             action->image = loadActionImage(getString(json, "theme"), getString(actionData, "image"));
             action->exec = getString(actionData, "exec");
             action->autoClose = jpathGetBool(actionData, "autoClose", true);
+            action->console = jpathGetBool(actionData, "console", false);
             flArrayPush(&fl->actions, action);
         }
     }
@@ -557,7 +585,8 @@ void flKey(Flashlight *fl, KeyType type, int key)
             Bind *bind = fl->binds.data[i];
             if((bind->key == key) && (bind->keyType == type))
             {
-                flCommand(fl, bind->command);
+                flCommand(fl, bind->commandInfo.command, bind->commandInfo.extraData);
+                break;
             }
         }
     }
@@ -575,7 +604,7 @@ void flKey(Flashlight *fl, KeyType type, int key)
         }
         else if((key == 10) || (key == 13))
         {
-            flCommand(fl, COMMAND_ACTION);
+            flCommand(fl, COMMAND_ACTION, NULL);
         }
         else if(key == 18)
         {
@@ -596,11 +625,11 @@ void flKey(Flashlight *fl, KeyType type, int key)
         }
         else if(key == 11)
         {
-            flCommand(fl, COMMAND_VIEW_PREV);
+            flCommand(fl, COMMAND_VIEW_PREV, NULL);
         }
         else if(key == 12)
         {
-            flCommand(fl, COMMAND_VIEW_NEXT);
+            flCommand(fl, COMMAND_VIEW_NEXT, NULL);
         }
     }
 }
@@ -646,7 +675,19 @@ static void flOnConsoleOutput(Flashlight *fl, void *userData, const char *text)
         fl->eventFunc(fl, FE_CONSOLE, (void *)text);
 }
 
-void flAction(Flashlight *fl)
+static Action * findActionByName(Flashlight *fl, const char *name)
+{
+    int i;
+    for(i=0; i<fl->actions.count; i++)
+    {
+        Action *action = fl->actions.data[i];
+        if(!strcmp(action->name, name))
+            return action;
+    }
+    return NULL;
+}
+
+void flAction(Flashlight *fl, const char *name)
 {
     if((fl->view.count == 0) || (fl->viewActions.count == 0))
     {
@@ -657,13 +698,42 @@ void flAction(Flashlight *fl)
         ListEntry *listEntry = fl->view.data[fl->viewIndex];
         const char *selectedPath = listEntry->path;
         Action *action = fl->viewActions.data[fl->viewActionIndex];
-        flExec(fl, action, selectedPath, flOnConsoleOutput, fl);
-        if(fl->eventFunc)
-            fl->eventFunc(fl, FE_ACTION, action);
+        if(name != NULL)
+        {
+            action = findActionByName(fl, name);
+        }
+        if(action != NULL)
+        {
+            flExec(fl, action, selectedPath, flOnConsoleOutput, fl);
+            if(fl->eventFunc)
+                fl->eventFunc(fl, FE_ACTION, action);
+
+            // Reset it back to the beginning for chaining actions easier
+            fl->viewActionIndex = 0;
+        }
     }
 }
 
-void flCommand(Flashlight *fl, Command command)
+void flClearSearch(Flashlight *fl)
+{
+    if(fl->searchLen)
+    {
+        memcpy(fl->searchPrev, fl->search, sizeof(fl->searchPrev));
+        fl->searchPrevLen = fl->searchLen;
+        fl->searchLen = 0;
+        fl->search[fl->searchLen] = 0;
+        flThink(fl);
+    }
+}
+
+void flUndoClearSearch(Flashlight *fl)
+{
+    memcpy(fl->search, fl->searchPrev, sizeof(fl->search));
+    fl->searchLen = fl->searchPrevLen;
+    flThink(fl);
+}
+
+void flCommand(Flashlight *fl, Command command, void *extraData)
 {
     switch(command)
     {
@@ -674,14 +744,22 @@ void flCommand(Flashlight *fl, Command command)
     }
     case COMMAND_ACTION:
     {
-        flAction(fl);
+        flAction(fl, NULL);
+        break;
+    }
+    case COMMAND_NAMED_ACTION:
+    {
+        flAction(fl, (const char *)extraData);
         break;
     }
     case COMMAND_CLEAR:
     {
-        fl->searchLen = 0;
-        fl->search[fl->searchLen] = 0;
-        flThink(fl);
+        flClearSearch(fl);
+        break;
+    }
+    case COMMAND_UNDO_CLEAR:
+    {
+        flUndoClearSearch(fl);
         break;
     }
     case COMMAND_VIEW_PREV:
@@ -723,12 +801,45 @@ void flSetScrollbackHeight(Flashlight *fl, int height)
     fl->scrollbackHeight = height;
 }
 
-void flOutput(Flashlight *fl, const char *text)
+static void flOutputSingleLine(Flashlight *fl, const char *text, int len)
 {
+    char *t = calloc(1, sizeof(char) * (len+1));
+    memcpy(t, text, len);
     while(fl->scrollback.count > fl->scrollbackLimit)
     {
         char *t = flArrayPop(&fl->scrollback);
         free(t);
     }
-    flArrayUnshift(&fl->scrollback, strdup(text));
+    flArrayUnshift(&fl->scrollback, t);
+}
+
+void flOutputBytes(Flashlight *fl, const char *text, int len)
+{
+    const char *t = text;
+    const char *newline;
+    const char *end = text + len; // just past the end of the string (where the null term would be)
+    while(t && *t)
+    {
+        newline = t;
+        for(; newline != end; newline++)
+        {
+            if(*newline == '\n')
+                break;
+        }
+        if(newline != end)
+        {
+            flOutputSingleLine(fl, t, newline - t);
+            t = newline+1;
+        }
+        else
+        {
+            flOutputSingleLine(fl, t, end - t);
+            break;
+        }
+    }
+}
+
+void flOutput(Flashlight *fl, const char *text)
+{
+    flOutputBytes(fl, text, strlen(text));
 }

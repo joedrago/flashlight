@@ -3,36 +3,72 @@
     "lists" : [
         {
             "type" : "files",
-            "path" : "C:\\Users\\joe\\Documents\\work"
+            "path" : "C:\\work\\bowser32",
+            "extensions" : ["txt","scons","py","pl","js","html","hpp","h","cpp","c"]
         }
     ],
     "actions" : [
         {
             "name" : "Open",
             "image" : "open",
-            "exec" : "!*!"
+            "exec" : "\"!*!\""
         },
         {
-            "name" : "Close",
+            "name" : "P4",
             "image" : "p4",
-            "exec" : "notepad !*!",
-            "autoClose" : false
+            "exec" : "p4 edit \"!*!\"",
+            "autoClose" : false,
+            "console" : true
+        },
+        {
+            "name" : "Explore",
+            "image" : "open",
+            "exec" : "explorer /select,\"!*!\""
+        },
+        {
+            "name" : "Vim",
+            "image" : "vim",
+            "exec" : "C:\\vim\\vim73\\gvim.exe --remote-silent \"!*!\""
         }
     ],
     "rules" : [
         {
-            "extensions" : ["cpp","h"],
             "action" : "Open"
         },
         {
-            "extensions" : ["cpp","h"],
-            "action" : "Close"
+            "action" : "P4"
+        },
+        {
+            "action" : "Explore"
+        },
+        {
+            "action" : "Vim"
         }
     ],
     "binds" : [
         {
+            "key" : "f1",
+            "command" : "action P4"
+        },
+        {
+            "key" : "f2",
+            "command" : "action Explore"
+        },
+        {
+            "key" : "f3",
+            "command" : "action Vim"
+        },
+        {
+            "key" : "v",
+            "command" : "action Vim"
+        },
+        {
             "key" : "down",
             "command" : "viewNext"
+        },
+        {
+            "key" : "r",
+            "command" : "reload"
         },
         {
             "key" : "up",
@@ -47,8 +83,16 @@
             "command" : "actionNext"
         },
         {
+            "key" : "a",
+            "command" : "clear"
+        },
+        {
             "key" : "l",
             "command" : "clear"
+        },
+        {
+            "key" : "p",
+            "command" : "undoClear"
         }
     ]
 }

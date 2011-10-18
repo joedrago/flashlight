@@ -39,6 +39,19 @@ typedef enum SpecialKey
     SK_LEFT,
     SK_RIGHT,
 
+    SK_F1,
+    SK_F2,
+    SK_F3,
+    SK_F4,
+    SK_F5,
+    SK_F6,
+    SK_F7,
+    SK_F8,
+    SK_F9,
+    SK_F10,
+    SK_F11,
+    SK_F12,
+
     SK_COUNT
 } SpecialKey;
 
@@ -52,13 +65,21 @@ typedef enum KeyType
     KT_COUNT
 } KeyType;
 
+typedef struct CommandInfo
+{
+    int command;
+    void *extraData;
+} CommandInfo;
+
 // --------------------------------------------------------------------------------------
 
 typedef enum Command
 {
     COMMAND_NONE = 0,
     COMMAND_CLEAR,
+    COMMAND_UNDO_CLEAR,
     COMMAND_ACTION,
+    COMMAND_NAMED_ACTION,
     COMMAND_RELOAD,
     COMMAND_VIEW_PREV,
     COMMAND_VIEW_NEXT,
@@ -76,6 +97,7 @@ typedef struct Action
     const char *exec;
     Image *image;
     int autoClose;
+    int console;
 } Action;
 
 // --------------------------------------------------------------------------------------
@@ -93,7 +115,7 @@ typedef struct Bind
     KeyType keyType;
     int key;
     const char *action;
-    Command command;
+    CommandInfo commandInfo;
 } Bind;
 
 // --------------------------------------------------------------------------------------
@@ -134,6 +156,8 @@ typedef struct Flashlight
 
     char search[SEARCH_MAXLEN + 1];
     int searchLen;
+    char searchPrev[SEARCH_MAXLEN + 1];
+    int searchPrevLen;
 
     cJSON *jsonData;
 
@@ -150,10 +174,13 @@ void flDestroy(Flashlight *fl);
 void flClear(Flashlight *fl);
 void flReload(Flashlight *fl);  // rereads configuration, does refresh
 void flRefresh(Flashlight *fl); // refreshes list caches
-void flAction(Flashlight *fl);  // Performs currently selected action on currently selected text
+void flAction(Flashlight *fl, const char *name);  // Performs currently selected action on currently selected text
 void flKey(Flashlight *fl, KeyType type, int key);
-void flCommand(Flashlight *fl, Command command);
+void flCommand(Flashlight *fl, Command command, void *data);
 void flOutput(Flashlight *fl, const char *text);
+void flOutputBytes(Flashlight *fl, const char *text, int len);
+void flClearSearch(Flashlight *fl);
+void flUndoClearSearch(Flashlight *fl);
 const char *flPath(const char *n1, const char *n2, const char *n3, const char *n4);
 
 #endif
