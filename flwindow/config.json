@@ -63,12 +63,24 @@
             "command" : "action Vim"
         },
         {
-            "key" : "down",
-            "command" : "viewNext"
+            "key" : "e",
+            "command" : "action Vim"
         },
         {
             "key" : "r",
             "command" : "reload"
+        },
+        {
+            "key" : "j",
+            "command" : "viewNext"
+        },
+        {
+            "key" : "k",
+            "command" : "viewPrev"
+        },
+        {
+            "key" : "down",
+            "command" : "viewNext"
         },
         {
             "key" : "up",

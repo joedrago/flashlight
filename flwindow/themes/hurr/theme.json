@@ -19,11 +19,11 @@
     ],
 
     "scrollbackColor" : [ 255, 255, 255 ],
-    "selectBackgroundColor" : [ 128, 128, 192 ],
+    "selectBackgroundColor" : [ 96, 96, 96 ],
     "searchBackgroundColor" : [ 192, 192, 192 ],
     "searchTextColor" : [ 0, 0, 0 ],
-    "listTextInactiveColor" : [ 0, 0, 96 ],
-    "listTextActiveColor" : [ 0, 0, 0 ],
+    "listTextInactiveColor" : [ 192, 192, 192 ],
+    "listTextActiveColor" : [ 255, 255, 255 ],
 
     "searchPadding" : {
         "l" : 0,
