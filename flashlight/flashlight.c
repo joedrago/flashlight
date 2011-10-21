@@ -25,6 +25,10 @@ static struct SpecialKeyTable
     {"down", SK_DOWN },
     {"left", SK_LEFT },
     {"right", SK_RIGHT },
+    {"pageUp", SK_PAGEUP },
+    {"pageDown", SK_PAGEDOWN },
+    {"home", SK_HOME },
+    {"end", SK_END },
     {"f1", SK_F1 },
     {"f2", SK_F2 },
     {"f3", SK_F3 },
@@ -63,6 +67,10 @@ static struct CommandNameTable
     {"reload", COMMAND_RELOAD },
     {"viewNext", COMMAND_VIEW_NEXT },
     {"viewPrev", COMMAND_VIEW_PREV },
+    {"viewPageUp", COMMAND_VIEW_PAGEUP },
+    {"viewPageDown", COMMAND_VIEW_PAGEDOWN },
+    {"viewTop", COMMAND_VIEW_TOP },
+    {"viewBottom", COMMAND_VIEW_BOTTOM },
     {"actionNext", COMMAND_ACTION_NEXT },
     {"actionPrev", COMMAND_ACTION_PREV },
     {0, 0}
@@ -87,7 +95,7 @@ static CommandInfo nameToCommand(const char *name)
         if(strstr(name, "action ") == name)
         {
             info.command = COMMAND_NAMED_ACTION;
-            info.extraData = (void*)(name + 7);
+            info.extraData = (void *)(name + 7);
         }
     }
     return info;
@@ -675,10 +683,10 @@ static void flOnConsoleOutput(Flashlight *fl, void *userData, const char *text)
         fl->eventFunc(fl, FE_CONSOLE, (void *)text);
 }
 
-static Action * findActionByName(Flashlight *fl, const char *name)
+static Action *findActionByName(Flashlight *fl, const char *name)
 {
     int i;
-    for(i=0; i<fl->actions.count; i++)
+    for(i = 0; i < fl->actions.count; i++)
     {
         Action *action = fl->actions.data[i];
         if(!strcmp(action->name, name))
@@ -772,6 +780,26 @@ void flCommand(Flashlight *fl, Command command, void *extraData)
         flSetViewIndex(fl, fl->viewIndex + 1);
         break;
     }
+    case COMMAND_VIEW_PAGEUP:
+    {
+        flSetViewIndex(fl, fl->viewIndex - (fl->viewHeight - 1));
+        break;
+    }
+    case COMMAND_VIEW_PAGEDOWN:
+    {
+        flSetViewIndex(fl, fl->viewIndex + (fl->viewHeight - 1));
+        break;
+    }
+    case COMMAND_VIEW_TOP:
+    {
+        flSetViewIndex(fl, 0);
+        break;
+    }
+    case COMMAND_VIEW_BOTTOM:
+    {
+        flSetViewIndex(fl, fl->view.count);
+        break;
+    }
     case COMMAND_ACTION_PREV:
     {
         flSetViewActionIndex(fl, fl->viewActionIndex - 1);
@@ -803,7 +831,7 @@ void flSetScrollbackHeight(Flashlight *fl, int height)
 
 static void flOutputSingleLine(Flashlight *fl, const char *text, int len)
 {
-    char *t = calloc(1, sizeof(char) * (len+1));
+    char *t = calloc(1, sizeof(char) * (len + 1));
     memcpy(t, text, len);
     while(fl->scrollback.count > fl->scrollbackLimit)
     {
@@ -829,7 +857,7 @@ void flOutputBytes(Flashlight *fl, const char *text, int len)
         if(newline != end)
         {
             flOutputSingleLine(fl, t, newline - t);
-            t = newline+1;
+            t = newline + 1;
         }
         else
         {

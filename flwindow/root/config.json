@@ -1,0 +1,126 @@
+{
+    "theme" : "vim",
+    "lists" : [
+        {
+            "type" : "files",
+            "path" : "C:\\Users\\joe\\Documents\\work",
+            "extensions" : ["txt","scons","py","pl","js","html","hpp","h","cpp","c"]
+        }
+    ],
+    "actions" : [
+        {
+            "name" : "Open",
+            "image" : "open",
+            "exec" : "\"!*!\""
+        },
+        {
+            "name" : "P4",
+            "image" : "p4",
+            "exec" : "p4 edit \"!*!\"",
+            "autoClose" : false,
+            "console" : true
+        },
+        {
+            "name" : "Explore",
+            "image" : "open",
+            "exec" : "explorer /select,\"!*!\""
+        },
+        {
+            "name" : "Vim",
+            "image" : "vim",
+            "exec" : "C:\\vim\\vim73\\gvim.exe --remote-silent \"!*!\""
+        }
+    ],
+    "rules" : [
+        {
+            "action" : "Open"
+        },
+        {
+            "action" : "P4"
+        },
+        {
+            "action" : "Explore"
+        },
+        {
+            "action" : "Vim"
+        }
+    ],
+    "binds" : [
+        {
+            "key" : "f1",
+            "command" : "action P4"
+        },
+        {
+            "key" : "f2",
+            "command" : "action Explore"
+        },
+        {
+            "key" : "f3",
+            "command" : "action Vim"
+        },
+        {
+            "key" : "v",
+            "command" : "action Vim"
+        },
+        {
+            "key" : "e",
+            "command" : "action Vim"
+        },
+        {
+            "key" : "r",
+            "command" : "reload"
+        },
+        {
+            "key" : "j",
+            "command" : "viewNext"
+        },
+        {
+            "key" : "k",
+            "command" : "viewPrev"
+        },
+        {
+            "key" : "down",
+            "command" : "viewNext"
+        },
+        {
+            "key" : "up",
+            "command" : "viewPrev"
+        },
+        {
+            "key" : "left",
+            "command" : "actionPrev"
+        },
+        {
+            "key" : "right",
+            "command" : "actionNext"
+        },
+        {
+            "key" : "a",
+            "command" : "clear"
+        },
+        {
+            "key" : "l",
+            "command" : "clear"
+        },
+        {
+            "key" : "p",
+            "command" : "undoClear"
+        },
+        {
+            "key" : "pageUp",
+            "command" : "viewPageUp"
+        },
+        {
+            "key" : "pageDown",
+            "command" : "viewPageDown"
+        },
+        {
+            "key" : "home",
+            "command" : "viewTop"
+        },
+        {
+            "key" : "end",
+            "command" : "viewBottom"
+        }
+    ]
+}

@@ -62,8 +62,8 @@ void DisplayError(Flashlight *fl, char *pszAPI);
 
 static int flExecRedirected(Flashlight *fl, Action *action, const char *path, flConsoleOutputFunc consoleOutputFunc, void *userData, int console)
 {
-    HANDLE hOutputReadTmp,hOutputRead,hOutputWrite;
-    HANDLE hInputWriteTmp,hInputRead,hInputWrite;
+    HANDLE hOutputReadTmp, hOutputRead, hOutputWrite;
+    HANDLE hInputWriteTmp, hInputRead, hInputWrite;
     HANDLE hErrorWrite;
     SECURITY_ATTRIBUTES sa;
     PROCESS_INFORMATION pi;
@@ -79,53 +79,53 @@ static int flExecRedirected(Flashlight *fl, Action *action, const char *path, fl
     consoleOutputFunc(fl, userData, sExecBuffer);
 
     // Set up the security attributes struct.
-    sa.nLength= sizeof(SECURITY_ATTRIBUTES);
+    sa.nLength = sizeof(SECURITY_ATTRIBUTES);
     sa.lpSecurityDescriptor = NULL;
     sa.bInheritHandle = TRUE;
 
     // Create the child output pipe.
-    if (!CreatePipe(&hOutputReadTmp,&hOutputWrite,&sa,0))
+    if(!CreatePipe(&hOutputReadTmp, &hOutputWrite, &sa, 0))
         DisplayError(fl, "CreatePipe");
 
     // Create a duplicate of the output write handle for the std error
     // write handle. This is necessary in case the child application
     // closes one of its std output handles.
-    if (!DuplicateHandle(GetCurrentProcess(),hOutputWrite,
-        GetCurrentProcess(),&hErrorWrite,0,
-        TRUE,DUPLICATE_SAME_ACCESS))
+    if(!DuplicateHandle(GetCurrentProcess(), hOutputWrite,
+                        GetCurrentProcess(), &hErrorWrite, 0,
+                        TRUE, DUPLICATE_SAME_ACCESS))
         DisplayError(fl, "DuplicateHandle");
 
 
     // Create the child input pipe.
-    if (!CreatePipe(&hInputRead,&hInputWriteTmp,&sa,0))
+    if(!CreatePipe(&hInputRead, &hInputWriteTmp, &sa, 0))
         DisplayError(fl, "CreatePipe");
 
     // Create new output read handle and the input write handles. Set
     // the Properties to FALSE. Otherwise, the child inherits the
     // properties and, as a result, non-closeable handles to the pipes
     // are created.
-    if (!DuplicateHandle(GetCurrentProcess(),hOutputReadTmp,
-        GetCurrentProcess(),
-        &hOutputRead, // Address of new handle.
-        0,FALSE, // Make it uninheritable.
-        DUPLICATE_SAME_ACCESS))
+    if(!DuplicateHandle(GetCurrentProcess(), hOutputReadTmp,
+                        GetCurrentProcess(),
+                        &hOutputRead, // Address of new handle.
+                        0, FALSE, // Make it uninheritable.
+                        DUPLICATE_SAME_ACCESS))
         DisplayError(fl, "DupliateHandle");
 
-    if (!DuplicateHandle(GetCurrentProcess(),hInputWriteTmp,
-        GetCurrentProcess(),
-        &hInputWrite, // Address of new handle.
-        0,FALSE, // Make it uninheritable.
-        DUPLICATE_SAME_ACCESS))
+    if(!DuplicateHandle(GetCurrentProcess(), hInputWriteTmp,
+                        GetCurrentProcess(),
+                        &hInputWrite, // Address of new handle.
+                        0, FALSE, // Make it uninheritable.
+                        DUPLICATE_SAME_ACCESS))
         DisplayError(fl, "DupliateHandle");
 
 
     // Close inheritable copies of the handles you do not want to be
     // inherited.
-    if (!CloseHandle(hOutputReadTmp)) DisplayError(fl, "CloseHandle");
-    if (!CloseHandle(hInputWriteTmp)) DisplayError(fl, "CloseHandle");
+    if(!CloseHandle(hOutputReadTmp)) DisplayError(fl, "CloseHandle");
+    if(!CloseHandle(hInputWriteTmp)) DisplayError(fl, "CloseHandle");
 
     // Set up the start up info struct.
-    ZeroMemory(&si,sizeof(STARTUPINFO));
+    ZeroMemory(&si, sizeof(STARTUPINFO));
     si.cb = sizeof(STARTUPINFO);
     si.dwFlags = STARTF_USESTDHANDLES;
     si.hStdOutput = hOutputWrite;
@@ -141,20 +141,20 @@ static int flExecRedirected(Flashlight *fl, Action *action, const char *path, fl
     // Child.exe). Make sure Child.exe is in the same directory as
     // redirect.c launch redirect from a command line to prevent location
     // confusion.
-    if (!CreateProcess(NULL,sExecBuffer,NULL,NULL,TRUE,
-        DETACHED_PROCESS,NULL,NULL,&si,&pi))
+    if(!CreateProcess(NULL, sExecBuffer, NULL, NULL, TRUE,
+                      DETACHED_PROCESS, NULL, NULL, &si, &pi))
         DisplayError(fl, "CreateProcess");
 
     // Close any unnecessary handles.
-    if (!CloseHandle(pi.hThread)) DisplayError(fl, "CloseHandle");
+    if(!CloseHandle(pi.hThread)) DisplayError(fl, "CloseHandle");
 
     // Close pipe handles (do not continue to modify the parent).
     // You need to make sure that no handles to the write end of the
     // output pipe are maintained in this process or else the pipe will
     // not close when the child process exits and the ReadFile will hang.
-    if (!CloseHandle(hOutputWrite)) DisplayError(fl, "CloseHandle");
-    if (!CloseHandle(hInputRead )) DisplayError(fl, "CloseHandle");
-    if (!CloseHandle(hErrorWrite)) DisplayError(fl, "CloseHandle");
+    if(!CloseHandle(hOutputWrite)) DisplayError(fl, "CloseHandle");
+    if(!CloseHandle(hInputRead)) DisplayError(fl, "CloseHandle");
+    if(!CloseHandle(hErrorWrite)) DisplayError(fl, "CloseHandle");
 
     // Read the child's output.
 
@@ -162,10 +162,10 @@ static int flExecRedirected(Flashlight *fl, Action *action, const char *path, fl
     {
         while(TRUE)
         {
-            if (!ReadFile(hOutputRead,lpBuffer,sizeof(lpBuffer),
-                &nBytesRead,NULL) || !nBytesRead)
+            if(!ReadFile(hOutputRead, lpBuffer, sizeof(lpBuffer),
+                         &nBytesRead, NULL) || !nBytesRead)
             {
-                if (GetLastError() == ERROR_BROKEN_PIPE)
+                if(GetLastError() == ERROR_BROKEN_PIPE)
                     break; // pipe done - normal exit path.
                 else
                     DisplayError(fl, "ReadFile"); // Something bad happened.
@@ -179,29 +179,29 @@ static int flExecRedirected(Flashlight *fl, Action *action, const char *path, fl
 
 
     // Force the read on the input to return by closing the stdin handle.
-    if (!CloseHandle(hOutputRead)) DisplayError(fl, "CloseHandle");
-    if (!CloseHandle(hInputWrite)) DisplayError(fl, "CloseHandle");
+    if(!CloseHandle(hOutputRead)) DisplayError(fl, "CloseHandle");
+    if(!CloseHandle(hInputWrite)) DisplayError(fl, "CloseHandle");
     return 1;
 }
 
-/////////////////////////////////////////////////////////////////////// 
+///////////////////////////////////////////////////////////////////////
 // DisplayError
 // Displays the error number and corresponding message.
-/////////////////////////////////////////////////////////////////////// 
+///////////////////////////////////////////////////////////////////////
 void DisplayError(Flashlight *fl, char *pszAPI)
 {
     LPVOID lpvMessageBuffer;
     CHAR szPrintBuffer[512];
 
     FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
         NULL, GetLastError(),
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
         (LPTSTR)&lpvMessageBuffer, 0, NULL);
 
     sprintf(szPrintBuffer,
-        "ERROR: API [%s] code [%d] message [%s]",
-        pszAPI, GetLastError(), (char *)lpvMessageBuffer);
+            "ERROR: API [%s] code [%d] message [%s]",
+            pszAPI, GetLastError(), (char *)lpvMessageBuffer);
 
     //flOutput(fl, szPrintBuffer);
     LocalFree(lpvMessageBuffer);

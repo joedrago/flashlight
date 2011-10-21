@@ -38,7 +38,10 @@ typedef enum SpecialKey
     SK_DOWN,
     SK_LEFT,
     SK_RIGHT,
-
+    SK_PAGEUP,
+    SK_PAGEDOWN,
+    SK_HOME,
+    SK_END,
     SK_F1,
     SK_F2,
     SK_F3,
@@ -83,6 +86,10 @@ typedef enum Command
     COMMAND_RELOAD,
     COMMAND_VIEW_PREV,
     COMMAND_VIEW_NEXT,
+    COMMAND_VIEW_PAGEUP,
+    COMMAND_VIEW_PAGEDOWN,
+    COMMAND_VIEW_TOP,
+    COMMAND_VIEW_BOTTOM,
     COMMAND_ACTION_PREV,
     COMMAND_ACTION_NEXT,
 

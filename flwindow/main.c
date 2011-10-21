@@ -69,14 +69,22 @@ static void flashlightDraw()
 {
     PAINTSTRUCT ps;
     HDC dc;
+    HDC realDC;
+    HDC memDC;
+    HBITMAP memBMP;
     RECT textRect;
     RECT clientRect;
     int i;
     int show;
     Flashlight *fl = sFlashlight;
 
-    dc = BeginPaint(sWindow, &ps);
+    realDC = BeginPaint(sWindow, &ps);
     GetClientRect(sWindow, &clientRect);
+    memDC = CreateCompatibleDC(realDC);
+    memBMP = CreateCompatibleBitmap(realDC, clientRect.right, clientRect.bottom);
+    SelectObject(memDC, memBMP);
+    dc = memDC;
+
     BitBlt(dc, 0, 0, clientRect.right, clientRect.bottom, NULL, 0, 0, BLACKNESS);
 
     for(i = 0; i < sTheme->images.count; i++)
@@ -93,8 +101,8 @@ static void flashlightDraw()
     SetBkMode(dc, TRANSPARENT);
     textRect.left = sTheme->searchMargins.left;
     textRect.top = sTheme->searchMargins.top;
-    textRect.right = clientRect.right - sTheme->searchMargins.right;
-    textRect.bottom = textRect.top + sTheme->textHeight;
+    textRect.right = clientRect.right - sTheme->searchMargins.right + sTheme->searchPadding.right;
+    textRect.bottom = textRect.top + sTheme->textHeight + sTheme->searchPadding.bottom;
     SetDCBrushColor(dc, sTheme->searchBackgroundColor);
     SelectObject(dc, GetStockObject(DC_BRUSH));
     Rectangle(dc, textRect.left, textRect.top, textRect.right, textRect.bottom);
@@ -104,6 +112,8 @@ static void flashlightDraw()
         sprintf(searchBox, "[%5d/%5d] Search: %s\n", fl->viewIndex + 1, fl->view.count, fl->search);
         textRect.left += sTheme->searchPadding.left;
         textRect.top += sTheme->searchPadding.top;
+        //textRect.right -= sTheme->searchPadding.right;
+        //textRect.bottom -= sTheme->searchPadding.bottom;
         SetTextColor(dc, sTheme->searchTextColor);
         DrawText(dc, searchBox, strlen(searchBox), &textRect, DT_SINGLELINE);
     }
@@ -162,7 +172,10 @@ static void flashlightDraw()
         }
     }
 
+    BitBlt(realDC, 0, 0, clientRect.right, clientRect.bottom, memDC, 0, 0, SRCCOPY);
     EndPaint(sWindow, &ps);
+    DeleteDC(memDC);
+    DeleteBitmap(memBMP);
 }
 
 void flashlightResize()
@@ -205,22 +218,66 @@ static LRESULT CALLBACK wndProc(HWND window, UINT message, WPARAM wparam, LPARAM
     case WM_KEYDOWN:
         switch(wparam)
         {
-        case VK_UP:    keyPressed(KT_SPECIAL, SK_UP);    break;
-        case VK_DOWN:  keyPressed(KT_SPECIAL, SK_DOWN);  break;
-        case VK_LEFT:  keyPressed(KT_SPECIAL, SK_LEFT);  break;
-        case VK_RIGHT: keyPressed(KT_SPECIAL, SK_RIGHT); break;
-        case VK_F1:    keyPressed(KT_SPECIAL, SK_F1);    break;
-        case VK_F2:    keyPressed(KT_SPECIAL, SK_F2);    break;
-        case VK_F3:    keyPressed(KT_SPECIAL, SK_F3);    break;
-        case VK_F4:    keyPressed(KT_SPECIAL, SK_F4);    break;
-        case VK_F5:    keyPressed(KT_SPECIAL, SK_F5);    break;
-        case VK_F6:    keyPressed(KT_SPECIAL, SK_F6);    break;
-        case VK_F7:    keyPressed(KT_SPECIAL, SK_F7);    break;
-        case VK_F8:    keyPressed(KT_SPECIAL, SK_F8);    break;
-        case VK_F9:    keyPressed(KT_SPECIAL, SK_F9);    break;
-        case VK_F10:   keyPressed(KT_SPECIAL, SK_F10);   break;
-        case VK_F11:   keyPressed(KT_SPECIAL, SK_F11);   break;
-        case VK_F12:   keyPressed(KT_SPECIAL, SK_F12);   break;
+        case VK_UP:
+            keyPressed(KT_SPECIAL, SK_UP);
+            break;
+        case VK_DOWN:
+            keyPressed(KT_SPECIAL, SK_DOWN);
+            break;
+        case VK_LEFT:
+            keyPressed(KT_SPECIAL, SK_LEFT);
+            break;
+        case VK_RIGHT:
+            keyPressed(KT_SPECIAL, SK_RIGHT);
+            break;
+        case VK_F1:
+            keyPressed(KT_SPECIAL, SK_F1);
+            break;
+        case VK_F2:
+            keyPressed(KT_SPECIAL, SK_F2);
+            break;
+        case VK_F3:
+            keyPressed(KT_SPECIAL, SK_F3);
+            break;
+        case VK_F4:
+            keyPressed(KT_SPECIAL, SK_F4);
+            break;
+        case VK_F5:
+            keyPressed(KT_SPECIAL, SK_F5);
+            break;
+        case VK_F6:
+            keyPressed(KT_SPECIAL, SK_F6);
+            break;
+        case VK_F7:
+            keyPressed(KT_SPECIAL, SK_F7);
+            break;
+        case VK_F8:
+            keyPressed(KT_SPECIAL, SK_F8);
+            break;
+        case VK_F9:
+            keyPressed(KT_SPECIAL, SK_F9);
+            break;
+        case VK_F10:
+            keyPressed(KT_SPECIAL, SK_F10);
+            break;
+        case VK_F11:
+            keyPressed(KT_SPECIAL, SK_F11);
+            break;
+        case VK_F12:
+            keyPressed(KT_SPECIAL, SK_F12);
+            break;
+        case VK_HOME:
+            keyPressed(KT_SPECIAL, SK_HOME);
+            break;
+        case VK_END:
+            keyPressed(KT_SPECIAL, SK_END);
+            break;
+        case VK_PRIOR:
+            keyPressed(KT_SPECIAL, SK_PAGEUP);
+            break;
+        case VK_NEXT:
+            keyPressed(KT_SPECIAL, SK_PAGEDOWN);
+            break;
         };
         break;
     case WM_HOTKEY:
