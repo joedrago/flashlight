@@ -141,6 +141,12 @@ typedef void (*flashlightEventFunc)(struct Flashlight *fl, FlashlightEvent e, vo
 
 #define SEARCH_MAXLEN 1023
 
+// These match window's mods (no FL_ prefix)
+#define FL_MOD_ALT         0x0001
+#define FL_MOD_CONTROL     0x0002
+#define FL_MOD_SHIFT       0x0004
+#define FL_MOD_WIN         0x0008
+
 typedef struct Flashlight
 {
     char *configFilename;
@@ -148,6 +154,9 @@ typedef struct Flashlight
     flArray binds;
     flArray rules;
     flArray actions;
+
+    unsigned int hotkeyModifiers;
+    unsigned int hotkey;
 
     flArray scrollback;
     int scrollbackLimit;

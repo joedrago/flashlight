@@ -369,7 +369,7 @@ static int prepareWindow(HINSTANCE inst)
     ShowWindow(sWindow, SW_SHOW);
     UpdateWindow(sWindow);
 
-    if(!RegisterHotKey(sWindow, 1, MOD_WIN, 'O'))
+    if(!RegisterHotKey(sWindow, 1, sFlashlight->hotkeyModifiers, sFlashlight->hotkey))
     {
         MessageBox(NULL, "Cant get hotkey", "flashlight", MB_OK);
     }

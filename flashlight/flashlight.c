@@ -366,6 +366,41 @@ static void flBuild(Flashlight *fl)
     cJSON *actions = cJSON_GetObjectItem(json, "actions");
     cJSON *rules = cJSON_GetObjectItem(json, "rules");
     cJSON *binds = cJSON_GetObjectItem(json, "binds");
+    const char *hotkey = getString(json, "hotkey");
+    if(hotkey)
+    {
+        char *temp = strdup(hotkey);
+        char *c = strtok(temp, "|");
+        fl->hotkeyModifiers = 0;
+        fl->hotkey = 0;
+        while(c)
+        {
+            if(!strcmp(c, "alt"))
+                fl->hotkeyModifiers |= FL_MOD_ALT;
+            else if(!strcmp(c, "control"))
+                fl->hotkeyModifiers |= FL_MOD_CONTROL;
+            else if(!strcmp(c, "ctrl"))
+                fl->hotkeyModifiers |= FL_MOD_CONTROL;
+            else if(!strcmp(c, "shift"))
+                fl->hotkeyModifiers |= FL_MOD_SHIFT;
+            else if(!strcmp(c, "win"))
+                fl->hotkeyModifiers |= FL_MOD_WIN;
+            else if(strlen(c) == 1)
+            {
+                char key = c[0];
+                if(key >= 'a' && key <= 'z')
+                    key -= 'a' - 'A';
+                fl->hotkey = key;
+            }
+            c = strtok(NULL, "|");
+        }
+        free(temp);
+    }
+    if(!fl->hotkeyModifiers || !fl->hotkey)
+    {
+        fl->hotkeyModifiers = FL_MOD_WIN;
+        fl->hotkey = 'O';
+    }
     if(lists && (lists->type == cJSON_Array))
     {
         int count = cJSON_GetArraySize(lists);
