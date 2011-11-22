@@ -284,7 +284,7 @@ static LRESULT CALLBACK wndProc(HWND window, UINT message, WPARAM wparam, LPARAM
         flashlightShow();
         break;
     case WM_CHAR:
-        if(GetKeyState(VK_CONTROL) & 0x8000)
+        if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
         {
             keyPressed(KT_CONTROL, (int)wparam);
         }
