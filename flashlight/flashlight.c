@@ -73,6 +73,7 @@ static struct CommandNameTable
     {"viewBottom", COMMAND_VIEW_BOTTOM },
     {"actionNext", COMMAND_ACTION_NEXT },
     {"actionPrev", COMMAND_ACTION_PREV },
+    {"clipboardCopy", COMMAND_CLIPBOARD_COPY },
     {0, 0}
 };
 
@@ -776,6 +777,30 @@ void flUndoClearSearch(Flashlight *fl)
     flThink(fl);
 }
 
+static void flClipboardCopy(Flashlight *fl)
+{
+    if(fl->view.count < 1)
+        return;
+
+    if(OpenClipboard(0))
+    {
+        ListEntry *listEntry = fl->view.data[fl->viewIndex];
+        const char *text = listEntry->path;
+        const size_t len = strlen(text) + 1;
+        HGLOBAL hMem =  GlobalAlloc(GMEM_MOVEABLE, len);
+        memcpy(GlobalLock(hMem), text, len);
+        GlobalUnlock(hMem);
+        EmptyClipboard();
+        SetClipboardData(CF_TEXT, hMem);
+        CloseClipboard();
+        flOutput(fl, "Clipboard: Copy");
+    }
+    else
+    {
+        flOutput(fl, "Clipboard: FAILED");
+    }
+}
+
 void flCommand(Flashlight *fl, Command command, void *extraData)
 {
     switch(command)
@@ -843,6 +868,11 @@ void flCommand(Flashlight *fl, Command command, void *extraData)
     case COMMAND_ACTION_NEXT:
     {
         flSetViewActionIndex(fl, fl->viewActionIndex + 1);
+        break;
+    }
+    case COMMAND_CLIPBOARD_COPY:
+    {
+        flClipboardCopy(fl);
         break;
     }
     }

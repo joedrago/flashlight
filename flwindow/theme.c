@@ -5,6 +5,7 @@
 
 Theme *themeCreate(const char *name)
 {
+    HDC dc = GetDC(NULL);
     cJSON *imageArray;
     Theme *theme = calloc(1, sizeof(*theme));
     const char *themeJsonFilename = flPath("themes", name, "theme.json", NULL);
@@ -64,7 +65,7 @@ Theme *themeCreate(const char *name)
             fontFilename = flPath("themes", name, fontFilename, NULL);
             AddFontResourceEx(fontFilename, FR_PRIVATE | FR_NOT_ENUM, 0);
         }
-        theme->font = CreateFont(fontSize, 0, 0, 0, /*FW_DONTCARE*/ fontWeight, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
+        theme->font = CreateFont(-MulDiv(fontSize, GetDeviceCaps(dc, LOGPIXELSY), 72), 0, 0, 0, /*FW_DONTCARE*/ fontWeight, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
                                  CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, fontName);
 
         imageArray = jpathGet(theme->jsonData, "images");
@@ -95,6 +96,7 @@ Theme *themeCreate(const char *name)
         }
     }
 
+    ReleaseDC(NULL, dc);
     return theme;
 }
 
