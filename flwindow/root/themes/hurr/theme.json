@@ -7,9 +7,9 @@
 
     "textHeight" : 14,
 
-    "initialX" : 680,
-    "initialY" : 520,
-    "initialWidth" : 1000,
+    "initialX" : 1680,
+    "initialY" : 0,
+    "initialWidth" : 1500,
     "initialHeight" : 500,
     "images" : [
         {

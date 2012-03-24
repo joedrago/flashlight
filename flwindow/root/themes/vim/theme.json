@@ -1,15 +1,15 @@
 {
     "font" : {
-        "name" : "Fixedsys",
-        "size" : 9,
+        "name" : "ProggyCleanTTSZ",
+        "size" : 12,
         "weight" : "normal"
     },
 
     "textHeight" : 16,
 
-    "initialX" : 680,
-    "initialY" : 520,
-    "initialWidth" : 1000,
+    "initialX" : 780,
+    "initialY" : 220,
+    "initialWidth" : 800,
     "initialHeight" : 500,
     "images" : [
         {

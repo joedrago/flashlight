@@ -1,11 +1,28 @@
 {
     "theme" : "vim",
+    "hotkey" : "win|o",
     "lists" : [
         {
             "type" : "files",
-            "path" : "C:\\Users\\joe\\Documents\\work",
-            "extensions" : ["txt","scons","py","pl","js","html","hpp","h","cpp","c"]
+            "path" : "C:\\work\\metroid",
+            "extensions" : ["txt","cmake","scons","py","pl","js","html","hpp","h","cpp","c","def"]
+        },
+        {
+            "type" : "files",
+            "path" : "C:\\work\\bowser",
+            "extensions" : ["txt","cmake","scons","py","pl","js","html","hpp","h","cpp","c","def"]
+        },
+        {
+            "type" : "files",
+            "path" : "C:\\ghs\\multi537P1",
+            "extensions" : ["txt","cmake","scons","py","pl","js","html","hpp","h","cpp","c","def"]
+        },
+        {
+            "type" : "files",
+            "path" : "C:\\Program Files (x86)\\LightTPD\\htdocs",
+            "extensions" : ["html","htm","js","txt"]
         }
+
     ],
     "actions" : [
         {
@@ -33,7 +50,7 @@
     ],
     "rules" : [
         {
-            "action" : "Open"
+            "action" : "Vim"
         },
         {
             "action" : "P4"
@@ -42,10 +59,14 @@
             "action" : "Explore"
         },
         {
-            "action" : "Vim"
+            "action" : "Open"
         }
     ],
     "binds" : [
+        {
+            "key" : "c",
+            "command" : "clipboardCopy"
+        },
         {
             "key" : "f1",
             "command" : "action P4"
@@ -64,7 +85,7 @@
         },
         {
             "key" : "e",
-            "command" : "action Vim"
+            "command" : "action Explore"
         },
         {
             "key" : "r",
