@@ -83,6 +83,7 @@ typedef enum Command
     COMMAND_UNDO_CLEAR,
     COMMAND_ACTION,
     COMMAND_NAMED_ACTION,
+    COMMAND_RELOAD_CURRENT,
     COMMAND_RELOAD,
     COMMAND_VIEW_PREV,
     COMMAND_VIEW_NEXT,
@@ -151,6 +152,7 @@ typedef void (*flashlightEventFunc)(struct Flashlight *fl, FlashlightEvent e, vo
 typedef struct Flashlight
 {
     char *configFilename;
+    char *currentListName;
     flArray lists;
     flArray binds;
     flArray rules;
@@ -167,6 +169,8 @@ typedef struct Flashlight
     int viewHeight;
     int viewOffset;
     int viewIndex;
+
+    int listIndex;
 
     flArray viewActions;
     int viewActionIndex;
@@ -189,7 +193,7 @@ void flSetViewHeight(Flashlight *fl, int viewHeight);
 void flSetScrollbackHeight(Flashlight *fl, int height);
 void flDestroy(Flashlight *fl);
 void flClear(Flashlight *fl);
-void flReload(Flashlight *fl);  // rereads configuration, does refresh
+void flReload(Flashlight *fl, int listIndex);  // rereads configuration, does refresh
 void flRefresh(Flashlight *fl); // refreshes list caches
 void flAction(Flashlight *fl, const char *name);  // Performs currently selected action on currently selected text
 void flKey(Flashlight *fl, KeyType type, int key);

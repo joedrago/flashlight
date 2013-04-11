@@ -54,7 +54,7 @@ int main(int argc, char **argv)
             if(show > fl->viewHeight)
                 show = fl->viewHeight;
             system(CLEARSCREEN_COMMAND);
-            printf("[%5d/%5d] Search: %s\n", fl->viewIndex + 1, fl->view.count, fl->search);
+            printf("[%5d/%5d] %s: %s\n", fl->viewIndex + 1, fl->view.count, fl->currentListName, fl->search);
             for(i = 0; i < show; i++)
             {
                 int currIndex = i + fl->viewOffset;

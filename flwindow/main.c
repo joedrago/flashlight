@@ -109,7 +109,7 @@ static void flashlightDraw()
     //if(fl->searchLen)
     {
         char searchBox[1024];
-        sprintf(searchBox, "[%5d/%5d] Search: %s\n", fl->viewIndex + 1, fl->view.count, fl->search);
+        sprintf(searchBox, "[%5d/%5d] Search [%s]: %s\n", fl->viewIndex + 1, fl->view.count, fl->currentListName, fl->search);
         textRect.left += sTheme->searchPadding.left;
         textRect.top += sTheme->searchPadding.top;
         //textRect.right -= sTheme->searchPadding.right;

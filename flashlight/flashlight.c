@@ -64,7 +64,7 @@ static struct CommandNameTable
 {
     {"clear", COMMAND_CLEAR },
     {"undoClear", COMMAND_UNDO_CLEAR },
-    {"reload", COMMAND_RELOAD },
+    {"reload", COMMAND_RELOAD_CURRENT },
     {"viewNext", COMMAND_VIEW_NEXT },
     {"viewPrev", COMMAND_VIEW_PREV },
     {"viewPageUp", COMMAND_VIEW_PAGEUP },
@@ -98,6 +98,24 @@ static CommandInfo nameToCommand(const char *name)
             info.command = COMMAND_NAMED_ACTION;
             info.extraData = (void *)(name + 7);
         }
+        else if(strstr(name, "reload") == name)
+        {
+            const char *num = name + 6;
+            info.command = COMMAND_RELOAD;
+            info.extraData = 0;
+            if(*num)
+            {
+                while(*num == ' ') ++num;
+                if(*num)
+                {
+                    info.extraData = (void *)(int)atoi(num);
+                    if((int)info.extraData < 0)
+                    {
+                        info.extraData = 0;
+                    }
+                }
+            }
+        }
     }
     return info;
 }
@@ -116,14 +134,18 @@ static const char *flstristr(const char *haystack, const char *needle)
              * Matched starting char -- loop through remaining chars.
              */
             const char *h, *n;
-            for(h = haystack, n = needle; *h && *n; ++h, ++n)
+            for(h = haystack, n = needle; *h && ((*n != '$') || *n); ++h, ++n)
             {
                 if(toupper(*h) != toupper(*n))
                 {
                     break;
                 }
             }
-            if(!*n)    /* matched all of 'needle' to null termination */
+            if((*n == '$') && !*h)
+            {
+                return haystack; /* return the start of the match */
+            }
+            else if(!*n)    /* matched all of 'needle' to null termination */
             {
                 return haystack; /* return the start of the match */
             }
@@ -176,8 +198,8 @@ Flashlight *flCreate(const char *configFilename)
     fl->viewHeight = 1;
     fl->scrollbackHeight = 1;
     fl->scrollbackLimit = 10;
-    flReload(fl);
-    flOutput(fl, "Flashlight v0.1");
+    flReload(fl, 0);
+    flOutput(fl, "Flashlight v0.2");
     return fl;
 }
 
@@ -402,19 +424,43 @@ static void flBuild(Flashlight *fl)
         fl->hotkeyModifiers = FL_MOD_WIN;
         fl->hotkey = 'O';
     }
+    fl->currentListName = NULL;
     if(lists && (lists->type == cJSON_Array))
     {
         int count = cJSON_GetArraySize(lists);
-        int i;
-        for(i = 0; i < count; i++)
+        if(count > 0)
         {
-            cJSON *listData = cJSON_GetArrayItem(lists, i);
-            List *list = calloc(1, sizeof(*list));
-            list->type = LT_FILES;
-            list->path = getString(listData, "path");
-            jsonAppendStringArray(jpathGet(listData, "extensions"), &list->extensions);
-            flArrayPush(&fl->lists, list);
+            cJSON *metalist;
+            while((metalist = cJSON_GetArrayItem(lists, fl->listIndex)) == NULL)
+            {
+                --fl->listIndex;
+                if(fl->listIndex < 0)
+                    break;
+            }
+            if(metalist && (metalist->type == cJSON_Object))
+            {
+                fl->currentListName = getString(metalist, "name");
+                lists = cJSON_GetObjectItem(metalist, "lists");
+                if(lists && (lists->type == cJSON_Array))
+                {
+                    int i;
+                    count = cJSON_GetArraySize(lists);
+                    for(i = 0; i < count; i++)
+                    {
+                        cJSON *listData = cJSON_GetArrayItem(lists, i);
+                        List *list = calloc(1, sizeof(*list));
+                        list->type = LT_FILES;
+                        list->path = getString(listData, "path");
+                        jsonAppendStringArray(jpathGet(listData, "extensions"), &list->extensions);
+                        flArrayPush(&fl->lists, list);
+                    }
+                }
+            }
         }
+    }
+    if(fl->currentListName == NULL)
+    {
+        fl->currentListName = "[unknown]";
     }
     if(binds && (binds->type == cJSON_Array))
     {
@@ -488,13 +534,18 @@ static void flBuild(Flashlight *fl)
     }
 }
 
-void flReload(Flashlight *fl)
+void flReload(Flashlight *fl, int listIndex)
 {
     flClear(fl);
 
     fl->jsonData = flLoadJSON(fl->configFilename);
     if(!fl->jsonData)
         return;
+
+    if(listIndex != -1)
+    {
+        fl->listIndex = listIndex;
+    }
 
     flBuild(fl);
     flRefresh(fl);
@@ -598,8 +649,7 @@ static void flThink(Flashlight *fl)
         for(j = 0; j < l->entries.count; j++)
         {
             ListEntry *e = l->entries.data[j];
-            if((fl->searchLen == 0)
-               || (flstristr(e->path, fl->search)))
+            if((fl->searchLen == 0) || (flstristr(e->path, fl->search)))
             {
                 flArrayPush(&fl->view, e);
             }
@@ -805,9 +855,14 @@ void flCommand(Flashlight *fl, Command command, void *extraData)
 {
     switch(command)
     {
+    case COMMAND_RELOAD_CURRENT:
+    {
+        flReload(fl, -1);
+        break;
+    }
     case COMMAND_RELOAD:
     {
-        flReload(fl);
+        flReload(fl, (int)extraData);
         break;
     }
     case COMMAND_ACTION:
