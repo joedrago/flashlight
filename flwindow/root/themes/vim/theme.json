@@ -1,7 +1,7 @@
 {
     "font" : {
-        "name" : "ProggyCleanTTSZ",
-        "size" : 12,
+        "name" : "Liberation Mono",
+        "size" : 10,
         "weight" : "normal"
     },
 

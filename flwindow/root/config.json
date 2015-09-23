@@ -3,39 +3,32 @@
     "hotkey" : "win|o",
     "lists" : [
         {
-            "type" : "files",
-            "path" : "C:\\work\\metroid",
-            "extensions" : ["txt","cmake","scons","py","pl","js","html","hpp","h","cpp","c","def"]
+            "name" : "Nova",
+            "lists": [
+                {
+                    "name" : "Nova",
+                    "type" : "files",
+                    "path" : "C:\\work\\nova",
+                    "extensions" : ["txt","cmake","scons","py","pl","js","html","hpp","h","cpp","c","def"]
+                }
+            ]
         },
         {
-            "type" : "files",
-            "path" : "C:\\work\\bowser",
-            "extensions" : ["txt","cmake","scons","py","pl","js","html","hpp","h","cpp","c","def"]
-        },
-        {
-            "type" : "files",
-            "path" : "C:\\ghs\\multi537P1",
-            "extensions" : ["txt","cmake","scons","py","pl","js","html","hpp","h","cpp","c","def"]
-        },
-        {
-            "type" : "files",
-            "path" : "C:\\Program Files (x86)\\LightTPD\\htdocs",
-            "extensions" : ["html","htm","js","txt"]
+            "name" : "Web",
+            "lists": [
+                {
+                    "type" : "files",
+                    "path" : "C:\\work\\webroot",
+                    "extensions" : ["html","htm","js","txt"]
+                }
+            ]
         }
-
     ],
     "actions" : [
         {
             "name" : "Open",
             "image" : "open",
             "exec" : "\"!*!\""
-        },
-        {
-            "name" : "P4",
-            "image" : "p4",
-            "exec" : "p4 edit \"!*!\"",
-            "autoClose" : false,
-            "console" : true
         },
         {
             "name" : "Explore",
@@ -45,15 +38,12 @@
         {
             "name" : "Vim",
             "image" : "vim",
-            "exec" : "C:\\vim\\vim73\\gvim.exe --remote-silent \"!*!\""
+            "exec" : "C:\\vim\\vim74\\gvim.exe --remote-silent \"!*!\""
         }
     ],
     "rules" : [
         {
             "action" : "Vim"
-        },
-        {
-            "action" : "P4"
         },
         {
             "action" : "Explore"
@@ -69,10 +59,6 @@
         },
         {
             "key" : "f1",
-            "command" : "action P4"
-        },
-        {
-            "key" : "f2",
             "command" : "action Explore"
         },
         {
@@ -88,7 +74,7 @@
             "command" : "action Explore"
         },
         {
-            "key" : "r",
+            "key" : "f5",
             "command" : "reload"
         },
         {
