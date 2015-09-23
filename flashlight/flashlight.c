@@ -120,6 +120,32 @@ static CommandInfo nameToCommand(const char *name)
     return info;
 }
 
+static int flstrmatches(const char *haystack, const char *needle)
+{
+	const char *h = haystack;
+	const char *n = needle;
+
+	for(;;)
+	{
+		if(*n == ' ')
+		{
+			++n;
+			continue;
+		}
+		if(*n == 0)
+			return 1;
+		if(*h == 0)
+			return 0;
+
+        if(toupper(*h) == toupper(*n))
+		{
+			++n;
+		}
+		++h;
+	}
+	return 0;
+}
+
 static const char *flstristr(const char *haystack, const char *needle)
 {
     if(!*needle)
@@ -649,7 +675,7 @@ static void flThink(Flashlight *fl)
         for(j = 0; j < l->entries.count; j++)
         {
             ListEntry *e = l->entries.data[j];
-            if((fl->searchLen == 0) || (flstristr(e->path, fl->search)))
+            if((fl->searchLen == 0) || (flstrmatches(e->path, fl->search)))
             {
                 flArrayPush(&fl->view, e);
             }
